@@ -1,4 +1,3 @@
-// User profile for onboarding
 export type Gender = "male" | "female";
 
 export type ActivityLevel =
@@ -9,6 +8,9 @@ export type ActivityLevel =
   | "extra_active"; // Corrigé: était "very_active"
 
 export type Goal = "lose" | "maintain" | "gain";
+
+// Rythme de perte/prise de poids (kg par semaine)
+export type WeightChangeRate = "0.5" | "1" | "1.5" | "2";
 
 // Pays supportés par le backend
 export type Country =
@@ -33,13 +35,9 @@ export interface UserProfile {
   height: number; // in cm
   activity: ActivityLevel;
   goal: Goal;
+  rate?: WeightChangeRate; // Rythme de perte/prise (requis si goal != maintain)
   country: Country; // Note: non envoyé à /calculate, utilisé pour /generate-menu
 }
-
-// ============================================
-// Types correspondant exactement au Backend
-// ============================================
-
 export interface PortionBudget {
   starch: number;
   fruit: number;
@@ -49,7 +47,6 @@ export interface PortionBudget {
   fat: number;
 }
 
-// Réponse brute du backend pour /api/calculate
 export interface BackendCalorieResult {
   success: boolean;
   data: {
@@ -199,6 +196,35 @@ export interface WeeklyMenuResponse {
   region: string;
 }
 
+// ============================================
+// Types pour le menu mensuel
+// ============================================
+
+export type DayOfMonth = number; // Validé côté backend (1-31)
+
+export interface BackendMonthlyMenuResponse {
+  success: boolean;
+  data: {
+    monthlyMenu: Record<DayOfMonth, DailyMenuData>;
+    summary: {
+      totalPortionsPerDay: PortionBudget;
+      totalFoodsPerDay: number;
+      daysGenerated: number;
+    };
+    region: string;
+  };
+}
+
+export interface MonthlyMenuResponse {
+  monthlyMenu: Record<DayOfMonth, Meal[]>;
+  summary: {
+    totalPortionsPerDay: PortionBudget;
+    totalFoodsPerDay: number;
+    daysGenerated: number;
+  };
+  region: string;
+}
+
 // Labels des jours
 export const DAY_LABELS: Record<DayOfWeek, string> = {
   monday: "Lundi",
@@ -230,6 +256,8 @@ export const DAYS_ORDER: DayOfWeek[] = [
   "sunday",
 ];
 
+export const MONTH_DAYS: DayOfMonth[] = Array.from({ length: 31 }, (_, i) => i + 1);
+
 // ============================================
 // Onboarding
 // ============================================
@@ -245,7 +273,8 @@ export const ONBOARDING_STEPS: OnboardingStep[] = [
   { id: 2, title: "Profil", description: "Vos informations physiques" },
   { id: 3, title: "Activité", description: "Votre niveau d'activité" },
   { id: 4, title: "Objectif", description: "Votre objectif nutritionnel" },
-  { id: 5, title: "Pays", description: "Votre pays de résidence" },
+  { id: 5, title: "Rythme", description: "Votre rythme souhaité" },
+  { id: 6, title: "Pays", description: "Votre pays de résidence" },
 ];
 
 // ============================================
@@ -278,6 +307,35 @@ export const GOAL_DESCRIPTIONS: Record<Goal, string> = {
   lose: "Réduire la masse grasse",
   maintain: "Garder votre poids actuel",
   gain: "Augmenter la masse musculaire",
+};
+
+// Labels et descriptions pour le rythme de perte/prise
+// 1 kg de graisse ≈ 7700 kcal
+export const RATE_LABELS: Record<WeightChangeRate, string> = {
+  "0.5": "0,5 kg/semaine",
+  "1": "1 kg/semaine",
+  "1.5": "1,5 kg/semaine",
+  "2": "2 kg/semaine",
+};
+
+export const RATE_KCAL_PER_DAY: Record<WeightChangeRate, number> = {
+  "0.5": 500,  // -/+ 500 kcal/jour
+  "1": 1000,   // -/+ 1000 kcal/jour
+  "1.5": 1500, // -/+ 1500 kcal/jour
+  "2": 2000,   // -/+ 2000 kcal/jour
+};
+
+// Limites minimales de calories par genre (santé)
+export const MIN_CALORIES: Record<Gender, number> = {
+  male: 1500,
+  female: 1200,
+};
+
+export const RATE_DESCRIPTIONS: Record<WeightChangeRate, string> = {
+  "0.5": "Progression douce et durable",
+  "1": "Rythme recommandé",
+  "1.5": "Progression rapide",
+  "2": "Progression intensive",
 };
 
 export const COUNTRY_LABELS: Record<Country, string> = {

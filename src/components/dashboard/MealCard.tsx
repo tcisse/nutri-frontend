@@ -14,10 +14,10 @@ interface MealCardProps {
 }
 
 const mealColors: Record<MealType, string> = {
-  breakfast: "from-amber-500/10 to-orange-500/5 border-amber-200/50",
-  snack: "from-rose-500/10 to-pink-500/5 border-rose-200/50",
-  lunch: "from-emerald-500/10 to-teal-500/5 border-emerald-200/50",
-  dinner: "from-indigo-500/10 to-purple-500/5 border-indigo-200/50",
+  breakfast: "border-amber-200/50",
+  snack: "border-rose-200/50",
+  lunch: "border-emerald-200/50",
+  dinner: "border-indigo-200/50",
 };
 
 const mealIconBg: Record<MealType, string> = {
@@ -44,15 +44,14 @@ export const MealCard = ({ meal, onSwapFood, className }: MealCardProps) => {
   return (
     <Card
       className={cn(
-        "overflow-hidden border-2 transition-all duration-300 hover:shadow-lg",
-        `bg-gradient-to-br ${mealColors[meal.type]}`,
+        "overflow-hidden border transition-all duration-300 hover:shadow-[2px]",
+        `bg-linear-to-br ${mealColors[meal.type]}`,
         className
       )}
     >
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            {/* Meal icon */}
             <div
               className={cn(
                 "w-12 h-12 rounded-xl flex items-center justify-center",

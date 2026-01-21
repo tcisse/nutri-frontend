@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -10,9 +10,8 @@ import {
   DaySelector,
   WeeklyCalorieHeader,
 } from "@/components/dashboard";
-import { useWeeklyMenu, useRegenerateDay, useRegenerateWeeklyMenu } from "@/hooks/useWeeklyMenu";
-import type { CalculateResponse, Country, MealType, DayOfWeek } from "@/types";
-import { DAY_LABELS } from "@/types";
+import { useMonthlyMenu, useRegenerateMonthDay, useRegenerateMonthlyMenu } from "@/hooks/useWeeklyMenu";
+import type { CalculateResponse, Country, MealType, DayOfMonth } from "@/types";
 import {
   Sparkles,
   RefreshCw,
@@ -22,70 +21,80 @@ import {
   FileDown,
 } from "lucide-react";
 
+const loadInitialData = (): {
+  planData: CalculateResponse | null;
+  country: Country;
+  shouldRedirect: boolean;
+} => {
+  if (typeof window === "undefined") {
+    return { planData: null, country: "general", shouldRedirect: false };
+  }
+
+  const storedPlan = sessionStorage.getItem("nutritionPlan");
+  const storedProfile = sessionStorage.getItem("userProfile");
+
+  if (!storedPlan) {
+    return { planData: null, country: "general", shouldRedirect: true };
+  }
+
+  try {
+    const parsed = JSON.parse(storedPlan);
+    if (parsed.calories && parsed.portions) {
+      let country: Country = "general";
+      if (storedProfile) {
+        try {
+          const profile = JSON.parse(storedProfile);
+          country = profile.country || "general";
+        } catch {
+          // Ignore
+        }
+      }
+      return { planData: parsed as CalculateResponse, country, shouldRedirect: false };
+    } else {
+      sessionStorage.removeItem("nutritionPlan");
+      sessionStorage.removeItem("userProfile");
+      return { planData: null, country: "general", shouldRedirect: true };
+    }
+  } catch {
+    return { planData: null, country: "general", shouldRedirect: true };
+  }
+};
+
 export default function DashboardPage() {
   const router = useRouter();
-  const [planData, setPlanData] = useState<CalculateResponse | null>(null);
-  const [country, setCountry] = useState<Country>("general");
-  const [selectedDay, setSelectedDay] = useState<DayOfWeek>("monday");
-  const [isReady, setIsReady] = useState(false);
+  
+  // Charger les données initiales de manière synchrone
+  const initialData = useMemo(() => loadInitialData(), []);
+  
+  const [planData] = useState<CalculateResponse | null>(initialData.planData);
+  const [country] = useState<Country>(initialData.country);
+  const [selectedDay, setSelectedDay] = useState<DayOfMonth>(1);
 
-  // Load plan data from sessionStorage
+  // Redirection si pas de données
   useEffect(() => {
-    const storedPlan = sessionStorage.getItem("nutritionPlan");
-    const storedProfile = sessionStorage.getItem("userProfile");
-
-    if (!storedPlan) {
+    if (initialData.shouldRedirect) {
       router.push("/onboarding");
-      return;
     }
+  }, [initialData.shouldRedirect, router]);
 
-    try {
-      const parsed = JSON.parse(storedPlan);
-      
-      // Vérifier si les données ont le bon format
-      if (parsed.calories && parsed.portions) {
-        setPlanData(parsed as CalculateResponse);
-        setIsReady(true);
-      } else {
-        // Ancien format incompatible, rediriger vers onboarding
-        console.log("Format de données incompatible, redirection...");
-        sessionStorage.removeItem("nutritionPlan");
-        sessionStorage.removeItem("userProfile");
-        router.push("/onboarding");
-        return;
-      }
-    } catch {
-      router.push("/onboarding");
-      return;
-    }
-
-    if (storedProfile) {
-      try {
-        const profile = JSON.parse(storedProfile);
-        setCountry(profile.country || "general");
-      } catch {
-        // Ignore parsing errors
-      }
-    }
-  }, [router]);
+  const isReady = planData !== null;
 
   // Fetch weekly menu from API
   const {
-    data: weeklyMenuData,
+    data: monthlyMenuData,
     isLoading,
     isError,
     error,
-  } = useWeeklyMenu(isReady ? planData?.portions || null : null, country);
+  } = useMonthlyMenu(isReady ? planData?.portions || null : null, country);
 
-  // Hooks pour régénérer
-  const regenerateDayMutation = useRegenerateDay();
-  const regenerateWeekMutation = useRegenerateWeeklyMenu();
+  const regenerateDayMutation = useRegenerateMonthDay();
+  const regenerateMonthMutation = useRegenerateMonthlyMenu();
 
-  // Récupérer les repas du jour sélectionné
-  const currentDayMeals = weeklyMenuData?.weeklyMenu[selectedDay] || [];
+  const currentDayMeals = monthlyMenuData?.monthlyMenu[selectedDay] || [];
 
-  // Fonction pour "changer" un aliment - régénère le jour
-  const handleSwapFood = async (_mealType: MealType, _foodId: string) => {
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const handleSwapFood = async (mealType: MealType, foodId: string) => {
     if (!planData?.portions) return;
 
     try {
@@ -94,7 +103,7 @@ export default function DashboardPage() {
         portions: planData.portions,
         region: country,
       });
-      toast.success(`${DAY_LABELS[selectedDay]} régénéré !`);
+      toast.success(`Jour ${selectedDay} régénéré !`);
     } catch {
       toast.error("Impossible de régénérer le jour");
     }
@@ -109,23 +118,23 @@ export default function DashboardPage() {
         portions: planData.portions,
         region: country,
       });
-      toast.success(`${DAY_LABELS[selectedDay]} régénéré !`);
+      toast.success(`Jour ${selectedDay} régénéré !`);
     } catch {
       toast.error("Impossible de régénérer le jour");
     }
   };
 
-  const handleRegenerateWeek = async () => {
+  const handleRegenerateMonth = async () => {
     if (!planData?.portions) return;
 
     try {
-      await regenerateWeekMutation.mutateAsync({
+      await regenerateMonthMutation.mutateAsync({
         portions: planData.portions,
         region: country,
       });
-      toast.success("Menu de la semaine régénéré !");
+      toast.success("Menu du mois régénéré !");
     } catch {
-      toast.error("Impossible de régénérer la semaine");
+      toast.error("Impossible de régénérer le mois");
     }
   };
 
@@ -147,7 +156,7 @@ export default function DashboardPage() {
   }
 
   const isRegenerating =
-    regenerateDayMutation.isPending || regenerateWeekMutation.isPending;
+    regenerateDayMutation.isPending || regenerateMonthMutation.isPending;
 
   return (
     <div className="min-h-screen bg-background">
@@ -162,7 +171,7 @@ export default function DashboardPage() {
               <h1 className="text-lg font-bold text-foreground">NutriPlan</h1>
               <p className="text-xs text-muted-foreground flex items-center gap-1">
                 <Calendar className="w-3 h-3" />
-                Menu de la semaine
+                Menu du mois
               </p>
             </div>
           </div>
@@ -190,9 +199,9 @@ export default function DashboardPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={handleRegenerateWeek}
+              onClick={handleRegenerateMonth}
               disabled={isLoading || isRegenerating}
-              aria-label="Régénérer la semaine"
+              aria-label="Régénérer le mois"
             >
               {isRegenerating ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -211,7 +220,7 @@ export default function DashboardPage() {
           <WeeklyCalorieHeader
             calories={planData.calories}
             portions={planData.portions}
-            selectedDay={selectedDay}
+            selectedDayLabel={`Jour ${selectedDay}`}
           />
         </section>
 
@@ -220,6 +229,7 @@ export default function DashboardPage() {
           <DaySelector
             selectedDay={selectedDay}
             onSelectDay={setSelectedDay}
+            days={monthlyMenuData?.summary.daysGenerated || 30}
           />
         </section>
 
@@ -227,7 +237,7 @@ export default function DashboardPage() {
         <section>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-foreground opacity-0 animate-fade-up stagger-2">
-              {DAY_LABELS[selectedDay]}
+              Jour {selectedDay}
             </h2>
             <Button
               variant="ghost"
@@ -250,7 +260,7 @@ export default function DashboardPage() {
               <p className="text-destructive mb-4">
                 Erreur lors du chargement : {error?.message}
               </p>
-              <Button onClick={handleRegenerateWeek} variant="outline">
+              <Button onClick={handleRegenerateMonth} variant="outline">
                 Réessayer
               </Button>
             </div>
@@ -279,7 +289,7 @@ export default function DashboardPage() {
                 <p className="text-muted-foreground mb-4">
                   Aucun menu généré pour ce jour.
                 </p>
-                <Button onClick={handleRegenerateWeek} disabled={isRegenerating}>
+                <Button onClick={handleRegenerateMonth} disabled={isRegenerating}>
                   {isRegenerating ? (
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   ) : (

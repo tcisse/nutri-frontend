@@ -1,19 +1,19 @@
 "use client";
 
-import { Flame, Utensils, Calendar } from "lucide-react";
-import type { PortionBudget, DayOfWeek } from "@/types";
-import { FOOD_GROUP_LABELS, DAY_LABELS } from "@/types";
+import { Utensils, Calendar } from "lucide-react";
+import type { PortionBudget } from "@/types";
+import { FOOD_GROUP_LABELS } from "@/types";
 
 interface WeeklyCalorieHeaderProps {
   calories: number;
   portions: PortionBudget;
-  selectedDay: DayOfWeek;
+  selectedDayLabel: string;
 }
 
 export const WeeklyCalorieHeader = ({
   calories,
   portions,
-  selectedDay,
+  selectedDayLabel,
 }: WeeklyCalorieHeaderProps) => {
   const portionItems = [
     { key: "starch" as const, emoji: "🍚" },
@@ -25,20 +25,17 @@ export const WeeklyCalorieHeader = ({
   ];
 
   return (
-    <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-transparent rounded-3xl p-6 sm:p-8 border border-primary/10">
+    <div className="bg-linear-to-br from-primary/10 via-primary/5 to-transparent rounded-3xl p-6 sm:p-8 border border-primary/10">
       {/* Day indicator */}
       <div className="flex items-center justify-center gap-2 mb-4">
         <Calendar className="w-4 h-4 text-primary" />
         <span className="text-sm font-medium text-primary">
-          {DAY_LABELS[selectedDay]}
+          {selectedDayLabel}
         </span>
       </div>
 
       {/* Calorie display */}
       <div className="flex items-center justify-center gap-4 mb-6">
-        <div className="w-14 h-14 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
-          <Flame className="w-7 h-7 text-primary-foreground" />
-        </div>
         <div>
           <p className="text-sm text-muted-foreground font-medium">
             Objectif quotidien

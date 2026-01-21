@@ -6,10 +6,15 @@ import { Check } from "lucide-react";
 
 interface ProgressBarProps {
   currentStep: number;
+  totalSteps?: number;
 }
 
-export const ProgressBar = ({ currentStep }: ProgressBarProps) => {
-  const progress = ((currentStep - 1) / (ONBOARDING_STEPS.length - 1)) * 100;
+export const ProgressBar = ({ currentStep, totalSteps }: ProgressBarProps) => {
+  // Utiliser totalSteps si fourni, sinon le nombre d'étapes par défaut
+  const steps = totalSteps
+    ? ONBOARDING_STEPS.slice(0, totalSteps)
+    : ONBOARDING_STEPS;
+  const progress = ((currentStep - 1) / (steps.length - 1)) * 100;
 
   return (
     <div className="w-full max-w-md mx-auto">
@@ -25,9 +30,10 @@ export const ProgressBar = ({ currentStep }: ProgressBarProps) => {
         />
 
         {/* Step dots */}
-        {ONBOARDING_STEPS.map((step) => {
-          const isCompleted = step.id < currentStep;
-          const isCurrent = step.id === currentStep;
+        {steps.map((step, index) => {
+          const stepNumber = index + 1;
+          const isCompleted = stepNumber < currentStep;
+          const isCurrent = stepNumber === currentStep;
 
           return (
             <div
@@ -45,7 +51,7 @@ export const ProgressBar = ({ currentStep }: ProgressBarProps) => {
               {isCompleted ? (
                 <Check className="w-4 h-4" />
               ) : (
-                <span className="text-xs font-semibold">{step.id}</span>
+                <span className="text-xs font-semibold">{stepNumber}</span>
               )}
             </div>
           );
@@ -55,10 +61,10 @@ export const ProgressBar = ({ currentStep }: ProgressBarProps) => {
       {/* Current step label */}
       <div className="text-center mt-4">
         <p className="text-xs text-muted-foreground uppercase tracking-wide">
-          Étape {currentStep} sur {ONBOARDING_STEPS.length}
+          Étape {currentStep} sur {steps.length}
         </p>
         <p className="text-sm font-medium text-foreground mt-1">
-          {ONBOARDING_STEPS[currentStep - 1]?.title}
+          {steps[currentStep - 1]?.title}
         </p>
       </div>
     </div>

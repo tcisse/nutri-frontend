@@ -1,63 +1,78 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { useWeeklyMenu } from "@/hooks/useWeeklyMenu";
-import type { CalculateResponse, Country, DayOfWeek, Meal } from "@/types";
-import { DAY_LABELS, MEAL_LABELS, FOOD_GROUP_LABELS, DAYS_ORDER } from "@/types";
+import { useMonthlyMenu } from "@/hooks/useWeeklyMenu";
+import type { CalculateResponse, Country, DayOfMonth, Meal } from "@/types";
+import { MEAL_LABELS, FOOD_GROUP_LABELS, MONTH_DAYS } from "@/types";
 import { Sparkles, ArrowLeft, Loader2, Download, FileText, Printer } from "lucide-react";
+
+// Helper pour charger les données depuis sessionStorage (hors effet)
+const loadInitialData = (): {
+  planData: CalculateResponse | null;
+  country: Country;
+  shouldRedirect: boolean;
+} => {
+  if (typeof window === "undefined") {
+    return { planData: null, country: "general", shouldRedirect: false };
+  }
+
+  const storedPlan = sessionStorage.getItem("nutritionPlan");
+  const storedProfile = sessionStorage.getItem("userProfile");
+
+  if (!storedPlan) {
+    return { planData: null, country: "general", shouldRedirect: true };
+  }
+
+  try {
+    const parsed = JSON.parse(storedPlan);
+    if (parsed.calories && parsed.portions) {
+      let country: Country = "general";
+      if (storedProfile) {
+        try {
+          const profile = JSON.parse(storedProfile);
+          country = profile.country || "general";
+        } catch {
+          // Ignore
+        }
+      }
+      return { planData: parsed as CalculateResponse, country, shouldRedirect: false };
+    } else {
+      sessionStorage.removeItem("nutritionPlan");
+      sessionStorage.removeItem("userProfile");
+      return { planData: null, country: "general", shouldRedirect: true };
+    }
+  } catch {
+    return { planData: null, country: "general", shouldRedirect: true };
+  }
+};
 
 export default function ExportPage() {
   const router = useRouter();
-  const [planData, setPlanData] = useState<CalculateResponse | null>(null);
-  const [country, setCountry] = useState<Country>("general");
-  const [isReady, setIsReady] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
 
-  // Load plan data from sessionStorage
+  // Charger les données initiales de manière synchrone
+  const initialData = useMemo(() => loadInitialData(), []);
+
+  const [planData] = useState<CalculateResponse | null>(initialData.planData);
+  const [country] = useState<Country>(initialData.country);
+
+  // Redirection si pas de données
   useEffect(() => {
-    const storedPlan = sessionStorage.getItem("nutritionPlan");
-    const storedProfile = sessionStorage.getItem("userProfile");
-
-    if (!storedPlan) {
+    if (initialData.shouldRedirect) {
       router.push("/onboarding");
-      return;
     }
+  }, [initialData.shouldRedirect, router]);
 
-    try {
-      const parsed = JSON.parse(storedPlan);
-      
-      if (parsed.calories && parsed.portions) {
-        setPlanData(parsed as CalculateResponse);
-        setIsReady(true);
-      } else {
-        sessionStorage.removeItem("nutritionPlan");
-        sessionStorage.removeItem("userProfile");
-        router.push("/onboarding");
-        return;
-      }
-    } catch {
-      router.push("/onboarding");
-      return;
-    }
+  const isReady = planData !== null;
 
-    if (storedProfile) {
-      try {
-        const profile = JSON.parse(storedProfile);
-        setCountry(profile.country || "general");
-      } catch {
-        // Ignore
-      }
-    }
-  }, [router]);
-
-  // Fetch weekly menu
+  // Fetch monthly menu
   const {
-    data: weeklyMenuData,
+    data: monthlyMenuData,
     isLoading,
     isError,
-  } = useWeeklyMenu(isReady ? planData?.portions || null : null, country);
+  } = useMonthlyMenu(isReady ? planData?.portions || null : null, country);
 
   const handleBack = useCallback(() => {
     router.push("/dashboard");
@@ -180,13 +195,13 @@ export default function ExportPage() {
         </div>
 
         {/* Contenu imprimable */}
-        {weeklyMenuData && (
+        {monthlyMenuData && (
           <div id="print-content" ref={printRef} className="max-w-4xl mx-auto px-4 py-8 print:p-4">
             {/* En-tête du PDF */}
             <div className="text-center mb-8 pb-6 border-b-2 border-primary">
               <h1 className="text-3xl font-bold text-primary mb-2">🥗 NutriPlan</h1>
               <p className="text-muted-foreground">
-                Votre plan alimentaire personnalisé pour la semaine
+                Votre plan alimentaire personnalisé pour le mois
               </p>
               <p className="text-sm text-muted-foreground mt-1">
                 Généré le {new Date().toLocaleDateString("fr-FR")}
@@ -214,18 +229,21 @@ export default function ExportPage() {
               </div>
             </div>
 
-            {/* Menu de la semaine */}
+            {/* Menu du mois */}
             <div className="space-y-6">
-              {DAYS_ORDER.map((day, dayIndex) => {
-                const meals = weeklyMenuData.weeklyMenu[day];
+              {MONTH_DAYS.filter(
+                (day) => day <= (monthlyMenuData.summary.daysGenerated || 30)
+              ).map((day, dayIndex) => {
+                const meals = monthlyMenuData.monthlyMenu[day as DayOfMonth];
+                if (!meals) return null;
                 
                 return (
                   <div 
-                    key={day} 
-                    className={`${dayIndex === 4 ? 'print-break' : ''}`}
+                    key={`day-${day}`} 
+                    className={`${dayIndex > 0 && dayIndex % 5 === 4 ? "print-break" : ""}`}
                   >
                     <h2 className="text-xl font-bold text-primary bg-green-50 px-4 py-2 rounded-lg mb-4">
-                      {DAY_LABELS[day]}
+                      Jour {day}
                     </h2>
                     
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

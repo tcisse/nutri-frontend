@@ -14,6 +14,9 @@ import type {
   WeeklyMenuResponse,
   DayOfWeek,
   DailyMenuData,
+  BackendMonthlyMenuResponse,
+  MonthlyMenuResponse,
+  DayOfMonth,
 } from "@/types";
 
 // Create axios instance with base configuration
@@ -197,6 +200,36 @@ const transformWeeklyMenuResponse = (
   };
 };
 
+/**
+ * Transforme la réponse backend /api/generate-monthly-menu vers le format frontend
+ */
+const transformMonthlyMenuResponse = (
+  backendResponse: BackendMonthlyMenuResponse
+): MonthlyMenuResponse => {
+  const { data } = backendResponse;
+  const { monthlyMenu, summary, region } = data;
+
+  const transformedMonthlyMenu: Record<DayOfMonth, Meal[]> = {} as Record<DayOfMonth, Meal[]>;
+
+  Object.entries(monthlyMenu).forEach(([day, dailyMenu]) => {
+    const dayNumber = Number(day) as DayOfMonth;
+    transformedMonthlyMenu[dayNumber] = transformDailyMenuToMeals(
+      dailyMenu as unknown as DailyMenuData,
+      dayNumber - 1
+    );
+  });
+
+  return {
+    monthlyMenu: transformedMonthlyMenu,
+    summary: {
+      totalPortionsPerDay: summary.totalPortionsPerDay,
+      totalFoodsPerDay: summary.totalFoodsPerDay,
+      daysGenerated: summary.daysGenerated,
+    },
+    region,
+  };
+};
+
 // ============================================
 // API Functions
 // ============================================
@@ -208,7 +241,15 @@ const transformWeeklyMenuResponse = (
 export const calculateCalories = async (
   profile: UserProfile
 ): Promise<CalculateResponse> => {
-  const payload = {
+  const payload: {
+    age: number;
+    weight: number;
+    height: number;
+    gender: string;
+    activity: string;
+    goal: string;
+    rate?: string;
+  } = {
     age: profile.age,
     weight: profile.weight,
     height: profile.height,
@@ -216,6 +257,11 @@ export const calculateCalories = async (
     activity: profile.activity,
     goal: profile.goal,
   };
+
+  // Ajouter rate seulement si goal != maintain
+  if (profile.goal !== "maintain" && profile.rate) {
+    payload.rate = profile.rate;
+  }
 
   const response = await api.post<BackendCalorieResult>("/calculate", payload);
   return transformCalorieResponse(response.data);
@@ -266,6 +312,25 @@ export const generateWeeklyMenu = async (
 };
 
 /**
+ * Generate a monthly meal plan based on portion budget
+ * POST /api/generate-monthly-menu
+ */
+export const generateMonthlyMenu = async (
+  portionBudget: PortionBudget,
+  preferredRegion?: string,
+  days?: number
+): Promise<MonthlyMenuResponse> => {
+  const payload: GenerateMenuPayload & { days?: number } = {
+    portionBudget,
+    preferredRegion,
+    days,
+  };
+
+  const response = await api.post<BackendMonthlyMenuResponse>("/generate-monthly-menu", payload);
+  return transformMonthlyMenuResponse(response.data);
+};
+
+/**
  * Regenerate a specific day of the weekly menu
  * POST /api/regenerate-day
  */
@@ -291,6 +356,33 @@ export const regenerateDay = async (
 
   const dayIndex = daysOrder.indexOf(day);
   return transformDailyMenuToMeals(response.data.data.menu as unknown as DailyMenuData, dayIndex);
+};
+
+/**
+ * Regenerate a specific day of the monthly menu
+ * POST /api/regenerate-month-day
+ */
+export const regenerateMonthDay = async (
+  day: DayOfMonth,
+  portionBudget: PortionBudget,
+  preferredRegion?: string
+): Promise<Meal[]> => {
+  const payload = {
+    day,
+    portionBudget,
+    preferredRegion,
+  };
+
+  const response = await api.post<{
+    success: boolean;
+    data: {
+      day: DayOfMonth;
+      menu: DailyMenuData;
+      region: string;
+    };
+  }>("/regenerate-month-day", payload);
+
+  return transformDailyMenuToMeals(response.data.data.menu as unknown as DailyMenuData, day - 1);
 };
 
 export default api;
