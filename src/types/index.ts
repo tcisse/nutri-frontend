@@ -10,6 +10,9 @@ export type ActivityLevel =
 
 export type Goal = "lose" | "maintain" | "gain";
 
+// Rythme de perte/prise de poids (kg par semaine)
+export type WeightChangeRate = "0.5" | "1" | "1.5" | "2";
+
 // Pays supportés par le backend
 export type Country =
   | "general"
@@ -33,6 +36,7 @@ export interface UserProfile {
   height: number; // in cm
   activity: ActivityLevel;
   goal: Goal;
+  rate?: WeightChangeRate; // Rythme de perte/prise (requis si goal != maintain)
   country: Country; // Note: non envoyé à /calculate, utilisé pour /generate-menu
 }
 
@@ -276,7 +280,8 @@ export const ONBOARDING_STEPS: OnboardingStep[] = [
   { id: 2, title: "Profil", description: "Vos informations physiques" },
   { id: 3, title: "Activité", description: "Votre niveau d'activité" },
   { id: 4, title: "Objectif", description: "Votre objectif nutritionnel" },
-  { id: 5, title: "Pays", description: "Votre pays de résidence" },
+  { id: 5, title: "Rythme", description: "Votre rythme souhaité" },
+  { id: 6, title: "Pays", description: "Votre pays de résidence" },
 ];
 
 // ============================================
@@ -309,6 +314,29 @@ export const GOAL_DESCRIPTIONS: Record<Goal, string> = {
   lose: "Réduire la masse grasse",
   maintain: "Garder votre poids actuel",
   gain: "Augmenter la masse musculaire",
+};
+
+// Labels et descriptions pour le rythme de perte/prise
+// 1 kg de graisse ≈ 7700 kcal
+export const RATE_LABELS: Record<WeightChangeRate, string> = {
+  "0.5": "0,5 kg/semaine",
+  "1": "1 kg/semaine",
+  "1.5": "1,5 kg/semaine",
+  "2": "2 kg/semaine",
+};
+
+export const RATE_KCAL_PER_DAY: Record<WeightChangeRate, number> = {
+  "0.5": Math.round((0.5 * 7700) / 7), // ~550 kcal/jour
+  "1": Math.round((1 * 7700) / 7),     // ~1100 kcal/jour
+  "1.5": Math.round((1.5 * 7700) / 7), // ~1650 kcal/jour
+  "2": Math.round((2 * 7700) / 7),     // ~2200 kcal/jour
+};
+
+export const RATE_DESCRIPTIONS: Record<WeightChangeRate, string> = {
+  "0.5": "Progression douce et durable",
+  "1": "Rythme recommandé",
+  "1.5": "Progression rapide",
+  "2": "Progression intensive",
 };
 
 export const COUNTRY_LABELS: Record<Country, string> = {

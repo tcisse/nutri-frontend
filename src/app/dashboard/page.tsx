@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -21,52 +21,63 @@ import {
   FileDown,
 } from "lucide-react";
 
+const loadInitialData = (): {
+  planData: CalculateResponse | null;
+  country: Country;
+  shouldRedirect: boolean;
+} => {
+  if (typeof window === "undefined") {
+    return { planData: null, country: "general", shouldRedirect: false };
+  }
+
+  const storedPlan = sessionStorage.getItem("nutritionPlan");
+  const storedProfile = sessionStorage.getItem("userProfile");
+
+  if (!storedPlan) {
+    return { planData: null, country: "general", shouldRedirect: true };
+  }
+
+  try {
+    const parsed = JSON.parse(storedPlan);
+    if (parsed.calories && parsed.portions) {
+      let country: Country = "general";
+      if (storedProfile) {
+        try {
+          const profile = JSON.parse(storedProfile);
+          country = profile.country || "general";
+        } catch {
+          // Ignore
+        }
+      }
+      return { planData: parsed as CalculateResponse, country, shouldRedirect: false };
+    } else {
+      sessionStorage.removeItem("nutritionPlan");
+      sessionStorage.removeItem("userProfile");
+      return { planData: null, country: "general", shouldRedirect: true };
+    }
+  } catch {
+    return { planData: null, country: "general", shouldRedirect: true };
+  }
+};
+
 export default function DashboardPage() {
   const router = useRouter();
-  const [planData, setPlanData] = useState<CalculateResponse | null>(null);
-  const [country, setCountry] = useState<Country>("general");
+  
+  // Charger les données initiales de manière synchrone
+  const initialData = useMemo(() => loadInitialData(), []);
+  
+  const [planData] = useState<CalculateResponse | null>(initialData.planData);
+  const [country] = useState<Country>(initialData.country);
   const [selectedDay, setSelectedDay] = useState<DayOfMonth>(1);
-  const [isReady, setIsReady] = useState(false);
 
-  // Load plan data from sessionStorage
+  // Redirection si pas de données
   useEffect(() => {
-    const storedPlan = sessionStorage.getItem("nutritionPlan");
-    const storedProfile = sessionStorage.getItem("userProfile");
-
-    if (!storedPlan) {
+    if (initialData.shouldRedirect) {
       router.push("/onboarding");
-      return;
     }
+  }, [initialData.shouldRedirect, router]);
 
-    try {
-      const parsed = JSON.parse(storedPlan);
-      
-      // Vérifier si les données ont le bon format
-      if (parsed.calories && parsed.portions) {
-        setPlanData(parsed as CalculateResponse);
-        setIsReady(true);
-      } else {
-        // Ancien format incompatible, rediriger vers onboarding
-        console.log("Format de données incompatible, redirection...");
-        sessionStorage.removeItem("nutritionPlan");
-        sessionStorage.removeItem("userProfile");
-        router.push("/onboarding");
-        return;
-      }
-    } catch {
-      router.push("/onboarding");
-      return;
-    }
-
-    if (storedProfile) {
-      try {
-        const profile = JSON.parse(storedProfile);
-        setCountry(profile.country || "general");
-      } catch {
-        // Ignore parsing errors
-      }
-    }
-  }, [router]);
+  const isReady = planData !== null;
 
   // Fetch weekly menu from API
   const {
@@ -76,15 +87,14 @@ export default function DashboardPage() {
     error,
   } = useMonthlyMenu(isReady ? planData?.portions || null : null, country);
 
-  // Hooks pour régénérer
   const regenerateDayMutation = useRegenerateMonthDay();
   const regenerateMonthMutation = useRegenerateMonthlyMenu();
 
-  // Récupérer les repas du jour sélectionné
   const currentDayMeals = monthlyMenuData?.monthlyMenu[selectedDay] || [];
 
-  // Fonction pour "changer" un aliment - régénère le jour
-  const handleSwapFood = async (_mealType: MealType, _foodId: string) => {
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const handleSwapFood = async (mealType: MealType, foodId: string) => {
     if (!planData?.portions) return;
 
     try {

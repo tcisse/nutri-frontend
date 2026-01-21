@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useMonthlyMenu } from "@/hooks/useWeeklyMenu";
@@ -8,49 +8,64 @@ import type { CalculateResponse, Country, DayOfMonth, Meal } from "@/types";
 import { MEAL_LABELS, FOOD_GROUP_LABELS, MONTH_DAYS } from "@/types";
 import { Sparkles, ArrowLeft, Loader2, Download, FileText, Printer } from "lucide-react";
 
+// Helper pour charger les données depuis sessionStorage (hors effet)
+const loadInitialData = (): {
+  planData: CalculateResponse | null;
+  country: Country;
+  shouldRedirect: boolean;
+} => {
+  if (typeof window === "undefined") {
+    return { planData: null, country: "general", shouldRedirect: false };
+  }
+
+  const storedPlan = sessionStorage.getItem("nutritionPlan");
+  const storedProfile = sessionStorage.getItem("userProfile");
+
+  if (!storedPlan) {
+    return { planData: null, country: "general", shouldRedirect: true };
+  }
+
+  try {
+    const parsed = JSON.parse(storedPlan);
+    if (parsed.calories && parsed.portions) {
+      let country: Country = "general";
+      if (storedProfile) {
+        try {
+          const profile = JSON.parse(storedProfile);
+          country = profile.country || "general";
+        } catch {
+          // Ignore
+        }
+      }
+      return { planData: parsed as CalculateResponse, country, shouldRedirect: false };
+    } else {
+      sessionStorage.removeItem("nutritionPlan");
+      sessionStorage.removeItem("userProfile");
+      return { planData: null, country: "general", shouldRedirect: true };
+    }
+  } catch {
+    return { planData: null, country: "general", shouldRedirect: true };
+  }
+};
+
 export default function ExportPage() {
   const router = useRouter();
-  const [planData, setPlanData] = useState<CalculateResponse | null>(null);
-  const [country, setCountry] = useState<Country>("general");
-  const [isReady, setIsReady] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
 
-  // Load plan data from sessionStorage
+  // Charger les données initiales de manière synchrone
+  const initialData = useMemo(() => loadInitialData(), []);
+
+  const [planData] = useState<CalculateResponse | null>(initialData.planData);
+  const [country] = useState<Country>(initialData.country);
+
+  // Redirection si pas de données
   useEffect(() => {
-    const storedPlan = sessionStorage.getItem("nutritionPlan");
-    const storedProfile = sessionStorage.getItem("userProfile");
-
-    if (!storedPlan) {
+    if (initialData.shouldRedirect) {
       router.push("/onboarding");
-      return;
     }
+  }, [initialData.shouldRedirect, router]);
 
-    try {
-      const parsed = JSON.parse(storedPlan);
-      
-      if (parsed.calories && parsed.portions) {
-        setPlanData(parsed as CalculateResponse);
-        setIsReady(true);
-      } else {
-        sessionStorage.removeItem("nutritionPlan");
-        sessionStorage.removeItem("userProfile");
-        router.push("/onboarding");
-        return;
-      }
-    } catch {
-      router.push("/onboarding");
-      return;
-    }
-
-    if (storedProfile) {
-      try {
-        const profile = JSON.parse(storedProfile);
-        setCountry(profile.country || "general");
-      } catch {
-        // Ignore
-      }
-    }
-  }, [router]);
+  const isReady = planData !== null;
 
   // Fetch monthly menu
   const {

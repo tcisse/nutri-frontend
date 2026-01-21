@@ -9,6 +9,7 @@ import {
   StepPhysical,
   StepActivity,
   StepGoal,
+  StepRate,
   StepCountry,
 } from "@/components/onboarding";
 import { useOnboardingStore } from "@/hooks/useOnboardingStore";
@@ -25,9 +26,11 @@ export default function OnboardingPage() {
     setPhysicalInfo,
     setActivity,
     setGoal,
+    setRate,
     setCountry,
     canProceed,
     getProfile,
+    getTotalSteps,
   } = useOnboardingStore();
 
   const calculateMutation = useCalculate();
@@ -56,7 +59,8 @@ export default function OnboardingPage() {
   };
 
   const handleNext = () => {
-    if (state.step === 5) {
+    const totalSteps = getTotalSteps(state.goal);
+    if (state.step === totalSteps) {
       handleSubmit();
     } else {
       nextStep();
@@ -83,13 +87,20 @@ export default function OnboardingPage() {
       case 4:
         return <StepGoal value={state.goal} onChange={setGoal} />;
       case 5:
+        // Si goal == maintain, cette étape est country (rate skipped)
+        if (state.goal === "maintain") {
+          return <StepCountry value={state.country} onChange={setCountry} />;
+        }
+        return <StepRate value={state.rate} goal={state.goal} onChange={setRate} />;
+      case 6:
         return <StepCountry value={state.country} onChange={setCountry} />;
       default:
         return null;
     }
   };
 
-  const isLastStep = state.step === 5;
+  const totalSteps = getTotalSteps(state.goal);
+  const isLastStep = state.step === totalSteps;
   const isLoading = calculateMutation.isPending;
 
   return (
@@ -108,7 +119,7 @@ export default function OnboardingPage() {
 
       {/* Progress bar */}
       <div className="py-6 px-4 bg-secondary/30">
-        <ProgressBar currentStep={state.step} />
+        <ProgressBar currentStep={state.step} totalSteps={totalSteps} />
       </div>
 
       {/* Main content */}

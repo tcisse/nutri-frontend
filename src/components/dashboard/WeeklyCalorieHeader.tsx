@@ -1,6 +1,6 @@
 "use client";
 
-import { Flame, Utensils, Calendar } from "lucide-react";
+import { Utensils, Calendar } from "lucide-react";
 import type { PortionBudget } from "@/types";
 import { FOOD_GROUP_LABELS } from "@/types";
 
@@ -25,7 +25,7 @@ export const WeeklyCalorieHeader = ({
   ];
 
   return (
-    <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-transparent rounded-3xl p-6 sm:p-8 border border-primary/10">
+    <div className="bg-linear-to-br from-primary/10 via-primary/5 to-transparent rounded-3xl p-6 sm:p-8 border border-primary/10">
       {/* Day indicator */}
       <div className="flex items-center justify-center gap-2 mb-4">
         <Calendar className="w-4 h-4 text-primary" />
@@ -36,9 +36,6 @@ export const WeeklyCalorieHeader = ({
 
       {/* Calorie display */}
       <div className="flex items-center justify-center gap-4 mb-6">
-        <div className="w-14 h-14 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
-          <Flame className="w-7 h-7 text-primary-foreground" />
-        </div>
         <div>
           <p className="text-sm text-muted-foreground font-medium">
             Objectif quotidien

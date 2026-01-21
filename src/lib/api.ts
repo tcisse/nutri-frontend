@@ -241,7 +241,15 @@ const transformMonthlyMenuResponse = (
 export const calculateCalories = async (
   profile: UserProfile
 ): Promise<CalculateResponse> => {
-  const payload = {
+  const payload: {
+    age: number;
+    weight: number;
+    height: number;
+    gender: string;
+    activity: string;
+    goal: string;
+    rate?: string;
+  } = {
     age: profile.age,
     weight: profile.weight,
     height: profile.height,
@@ -249,6 +257,11 @@ export const calculateCalories = async (
     activity: profile.activity,
     goal: profile.goal,
   };
+
+  // Ajouter rate seulement si goal != maintain
+  if (profile.goal !== "maintain" && profile.rate) {
+    payload.rate = profile.rate;
+  }
 
   const response = await api.post<BackendCalorieResult>("/calculate", payload);
   return transformCalorieResponse(response.data);
