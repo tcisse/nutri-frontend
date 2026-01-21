@@ -1,4 +1,3 @@
-// User profile for onboarding
 export type Gender = "male" | "female";
 
 export type ActivityLevel =
@@ -39,11 +38,6 @@ export interface UserProfile {
   rate?: WeightChangeRate; // Rythme de perte/prise (requis si goal != maintain)
   country: Country; // Note: non envoyé à /calculate, utilisé pour /generate-menu
 }
-
-// ============================================
-// Types correspondant exactement au Backend
-// ============================================
-
 export interface PortionBudget {
   starch: number;
   fruit: number;
@@ -53,7 +47,6 @@ export interface PortionBudget {
   fat: number;
 }
 
-// Réponse brute du backend pour /api/calculate
 export interface BackendCalorieResult {
   success: boolean;
   data: {
@@ -326,10 +319,16 @@ export const RATE_LABELS: Record<WeightChangeRate, string> = {
 };
 
 export const RATE_KCAL_PER_DAY: Record<WeightChangeRate, number> = {
-  "0.5": Math.round((0.5 * 7700) / 7), // ~550 kcal/jour
-  "1": Math.round((1 * 7700) / 7),     // ~1100 kcal/jour
-  "1.5": Math.round((1.5 * 7700) / 7), // ~1650 kcal/jour
-  "2": Math.round((2 * 7700) / 7),     // ~2200 kcal/jour
+  "0.5": 500,  // -/+ 500 kcal/jour
+  "1": 1000,   // -/+ 1000 kcal/jour
+  "1.5": 1500, // -/+ 1500 kcal/jour
+  "2": 2000,   // -/+ 2000 kcal/jour
+};
+
+// Limites minimales de calories par genre (santé)
+export const MIN_CALORIES: Record<Gender, number> = {
+  male: 1500,
+  female: 1200,
 };
 
 export const RATE_DESCRIPTIONS: Record<WeightChangeRate, string> = {
