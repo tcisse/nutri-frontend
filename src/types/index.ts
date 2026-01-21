@@ -199,6 +199,35 @@ export interface WeeklyMenuResponse {
   region: string;
 }
 
+// ============================================
+// Types pour le menu mensuel
+// ============================================
+
+export type DayOfMonth = number; // Validé côté backend (1-31)
+
+export interface BackendMonthlyMenuResponse {
+  success: boolean;
+  data: {
+    monthlyMenu: Record<DayOfMonth, DailyMenuData>;
+    summary: {
+      totalPortionsPerDay: PortionBudget;
+      totalFoodsPerDay: number;
+      daysGenerated: number;
+    };
+    region: string;
+  };
+}
+
+export interface MonthlyMenuResponse {
+  monthlyMenu: Record<DayOfMonth, Meal[]>;
+  summary: {
+    totalPortionsPerDay: PortionBudget;
+    totalFoodsPerDay: number;
+    daysGenerated: number;
+  };
+  region: string;
+}
+
 // Labels des jours
 export const DAY_LABELS: Record<DayOfWeek, string> = {
   monday: "Lundi",
@@ -229,6 +258,8 @@ export const DAYS_ORDER: DayOfWeek[] = [
   "saturday",
   "sunday",
 ];
+
+export const MONTH_DAYS: DayOfMonth[] = Array.from({ length: 31 }, (_, i) => i + 1);
 
 // ============================================
 // Onboarding

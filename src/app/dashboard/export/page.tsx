@@ -3,9 +3,9 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { useWeeklyMenu } from "@/hooks/useWeeklyMenu";
-import type { CalculateResponse, Country, DayOfWeek, Meal } from "@/types";
-import { DAY_LABELS, MEAL_LABELS, FOOD_GROUP_LABELS, DAYS_ORDER } from "@/types";
+import { useMonthlyMenu } from "@/hooks/useWeeklyMenu";
+import type { CalculateResponse, Country, DayOfMonth, Meal } from "@/types";
+import { MEAL_LABELS, FOOD_GROUP_LABELS, MONTH_DAYS } from "@/types";
 import { Sparkles, ArrowLeft, Loader2, Download, FileText, Printer } from "lucide-react";
 
 export default function ExportPage() {
@@ -52,12 +52,12 @@ export default function ExportPage() {
     }
   }, [router]);
 
-  // Fetch weekly menu
+  // Fetch monthly menu
   const {
-    data: weeklyMenuData,
+    data: monthlyMenuData,
     isLoading,
     isError,
-  } = useWeeklyMenu(isReady ? planData?.portions || null : null, country);
+  } = useMonthlyMenu(isReady ? planData?.portions || null : null, country);
 
   const handleBack = useCallback(() => {
     router.push("/dashboard");
@@ -180,13 +180,13 @@ export default function ExportPage() {
         </div>
 
         {/* Contenu imprimable */}
-        {weeklyMenuData && (
+        {monthlyMenuData && (
           <div id="print-content" ref={printRef} className="max-w-4xl mx-auto px-4 py-8 print:p-4">
             {/* En-tête du PDF */}
             <div className="text-center mb-8 pb-6 border-b-2 border-primary">
               <h1 className="text-3xl font-bold text-primary mb-2">🥗 NutriPlan</h1>
               <p className="text-muted-foreground">
-                Votre plan alimentaire personnalisé pour la semaine
+                Votre plan alimentaire personnalisé pour le mois
               </p>
               <p className="text-sm text-muted-foreground mt-1">
                 Généré le {new Date().toLocaleDateString("fr-FR")}
@@ -214,18 +214,21 @@ export default function ExportPage() {
               </div>
             </div>
 
-            {/* Menu de la semaine */}
+            {/* Menu du mois */}
             <div className="space-y-6">
-              {DAYS_ORDER.map((day, dayIndex) => {
-                const meals = weeklyMenuData.weeklyMenu[day];
+              {MONTH_DAYS.filter(
+                (day) => day <= (monthlyMenuData.summary.daysGenerated || 30)
+              ).map((day, dayIndex) => {
+                const meals = monthlyMenuData.monthlyMenu[day as DayOfMonth];
+                if (!meals) return null;
                 
                 return (
                   <div 
-                    key={day} 
-                    className={`${dayIndex === 4 ? 'print-break' : ''}`}
+                    key={`day-${day}`} 
+                    className={`${dayIndex > 0 && dayIndex % 5 === 4 ? "print-break" : ""}`}
                   >
                     <h2 className="text-xl font-bold text-primary bg-green-50 px-4 py-2 rounded-lg mb-4">
-                      {DAY_LABELS[day]}
+                      Jour {day}
                     </h2>
                     
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

@@ -1,23 +1,27 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import type { DayOfWeek } from "@/types";
-import { DAY_SHORT_LABELS, DAYS_ORDER } from "@/types";
+import type { DayOfMonth } from "@/types";
+import { MONTH_DAYS } from "@/types";
 
 interface DaySelectorProps {
-  selectedDay: DayOfWeek;
-  onSelectDay: (day: DayOfWeek) => void;
+  selectedDay: DayOfMonth;
+  onSelectDay: (day: DayOfMonth) => void;
+  days?: number;
   className?: string;
 }
 
 export const DaySelector = ({
   selectedDay,
   onSelectDay,
+  days = 30,
   className,
 }: DaySelectorProps) => {
+  const availableDays = MONTH_DAYS.filter((day) => day <= days);
+
   return (
-    <div className={cn("flex gap-1 sm:gap-2 overflow-x-auto pb-2", className)}>
-      {DAYS_ORDER.map((day) => {
+    <div className={cn("grid grid-cols-7 gap-2", className)}>
+      {availableDays.map((day) => {
         const isSelected = selectedDay === day;
 
         return (
@@ -32,16 +36,16 @@ export const DaySelector = ({
               }
             }}
             tabIndex={0}
-            aria-label={`Sélectionner ${DAY_SHORT_LABELS[day]}`}
+            aria-label={`Sélectionner le jour ${day}`}
             aria-pressed={isSelected}
             className={cn(
-              "flex-shrink-0 px-3 sm:px-4 py-2 rounded-xl font-medium text-sm transition-all duration-200",
+              "flex items-center justify-center h-10 rounded-xl font-medium text-sm transition-all duration-200",
               isSelected
                 ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
                 : "bg-secondary/50 text-muted-foreground hover:bg-secondary hover:text-foreground"
             )}
           >
-            {DAY_SHORT_LABELS[day]}
+            {day}
           </button>
         );
       })}

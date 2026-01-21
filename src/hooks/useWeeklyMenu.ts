@@ -1,53 +1,52 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { generateWeeklyMenu, regenerateDay } from "@/lib/api";
-import type { WeeklyMenuResponse, PortionBudget, DayOfWeek, Meal } from "@/types";
+import { generateMonthlyMenu, regenerateMonthDay } from "@/lib/api";
+import type { MonthlyMenuResponse, PortionBudget, DayOfMonth, Meal } from "@/types";
 
 // Query key factory
-export const weeklyMenuKeys = {
-  all: ["weeklyMenu"] as const,
+export const monthlyMenuKeys = {
+  all: ["monthlyMenu"] as const,
   detail: (portions: PortionBudget, region: string) =>
-    [...weeklyMenuKeys.all, JSON.stringify(portions), region] as const,
+    [...monthlyMenuKeys.all, JSON.stringify(portions), region] as const,
 };
 
 /**
- * Hook pour récupérer le menu hebdomadaire
+ * Hook pour récupérer le menu mensuel
  */
-export const useWeeklyMenu = (portions: PortionBudget | null, region: string) => {
-  return useQuery<WeeklyMenuResponse, Error>({
-    queryKey: weeklyMenuKeys.detail(portions || ({} as PortionBudget), region),
-    queryFn: () => generateWeeklyMenu(portions!, region),
+export const useMonthlyMenu = (portions: PortionBudget | null, region: string, days = 30) => {
+  return useQuery<MonthlyMenuResponse, Error>({
+    queryKey: monthlyMenuKeys.detail(portions || ({} as PortionBudget), `${region}-${days}`),
+    queryFn: () => generateMonthlyMenu(portions!, region, days),
     enabled: !!portions && Object.keys(portions).length > 0,
-    staleTime: 10 * 60 * 1000, // 10 minutes (plus long car c'est une semaine)
+    staleTime: 10 * 60 * 1000, // 10 minutes
     retry: 2,
   });
 };
 
 /**
- * Hook pour régénérer un jour spécifique
+ * Hook pour régénérer un jour spécifique du mois
  */
-export const useRegenerateDay = () => {
+export const useRegenerateMonthDay = () => {
   const queryClient = useQueryClient();
 
   return useMutation<
     Meal[],
     Error,
-    { day: DayOfWeek; portions: PortionBudget; region: string }
+    { day: DayOfMonth; portions: PortionBudget; region: string; days?: number }
   >({
     mutationFn: ({ day, portions, region }) =>
-      regenerateDay(day, portions, region),
-    onSuccess: (newMeals, { day, portions, region }) => {
-      // Mettre à jour le cache avec le nouveau jour
-      queryClient.setQueryData<WeeklyMenuResponse>(
-        weeklyMenuKeys.detail(portions, region),
+      regenerateMonthDay(day, portions, region),
+    onSuccess: (newMeals, { day, portions, region, days = 30 }) => {
+      queryClient.setQueryData<MonthlyMenuResponse>(
+        monthlyMenuKeys.detail(portions, `${region}-${days}`),
         (old) => {
           if (!old) return old;
 
           return {
             ...old,
-            weeklyMenu: {
-              ...old.weeklyMenu,
+            monthlyMenu: {
+              ...old.monthlyMenu,
               [day]: newMeals,
             },
           };
@@ -58,19 +57,19 @@ export const useRegenerateDay = () => {
 };
 
 /**
- * Hook pour régénérer tout le menu hebdomadaire
+ * Hook pour régénérer tout le menu mensuel
  */
-export const useRegenerateWeeklyMenu = () => {
+export const useRegenerateMonthlyMenu = () => {
   const queryClient = useQueryClient();
 
   return useMutation<
-    WeeklyMenuResponse,
+    MonthlyMenuResponse,
     Error,
-    { portions: PortionBudget; region: string }
+    { portions: PortionBudget; region: string; days?: number }
   >({
-    mutationFn: ({ portions, region }) => generateWeeklyMenu(portions, region),
-    onSuccess: (data, { portions, region }) => {
-      queryClient.setQueryData(weeklyMenuKeys.detail(portions, region), data);
+    mutationFn: ({ portions, region, days = 30 }) => generateMonthlyMenu(portions, region, days),
+    onSuccess: (data, { portions, region, days = 30 }) => {
+      queryClient.setQueryData(monthlyMenuKeys.detail(portions, `${region}-${days}`), data);
     },
   });
 };

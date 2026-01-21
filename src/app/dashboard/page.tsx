@@ -10,9 +10,8 @@ import {
   DaySelector,
   WeeklyCalorieHeader,
 } from "@/components/dashboard";
-import { useWeeklyMenu, useRegenerateDay, useRegenerateWeeklyMenu } from "@/hooks/useWeeklyMenu";
-import type { CalculateResponse, Country, MealType, DayOfWeek } from "@/types";
-import { DAY_LABELS } from "@/types";
+import { useMonthlyMenu, useRegenerateMonthDay, useRegenerateMonthlyMenu } from "@/hooks/useWeeklyMenu";
+import type { CalculateResponse, Country, MealType, DayOfMonth } from "@/types";
 import {
   Sparkles,
   RefreshCw,
@@ -26,7 +25,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const [planData, setPlanData] = useState<CalculateResponse | null>(null);
   const [country, setCountry] = useState<Country>("general");
-  const [selectedDay, setSelectedDay] = useState<DayOfWeek>("monday");
+  const [selectedDay, setSelectedDay] = useState<DayOfMonth>(1);
   const [isReady, setIsReady] = useState(false);
 
   // Load plan data from sessionStorage
@@ -71,18 +70,18 @@ export default function DashboardPage() {
 
   // Fetch weekly menu from API
   const {
-    data: weeklyMenuData,
+    data: monthlyMenuData,
     isLoading,
     isError,
     error,
-  } = useWeeklyMenu(isReady ? planData?.portions || null : null, country);
+  } = useMonthlyMenu(isReady ? planData?.portions || null : null, country);
 
   // Hooks pour régénérer
-  const regenerateDayMutation = useRegenerateDay();
-  const regenerateWeekMutation = useRegenerateWeeklyMenu();
+  const regenerateDayMutation = useRegenerateMonthDay();
+  const regenerateMonthMutation = useRegenerateMonthlyMenu();
 
   // Récupérer les repas du jour sélectionné
-  const currentDayMeals = weeklyMenuData?.weeklyMenu[selectedDay] || [];
+  const currentDayMeals = monthlyMenuData?.monthlyMenu[selectedDay] || [];
 
   // Fonction pour "changer" un aliment - régénère le jour
   const handleSwapFood = async (_mealType: MealType, _foodId: string) => {
@@ -94,7 +93,7 @@ export default function DashboardPage() {
         portions: planData.portions,
         region: country,
       });
-      toast.success(`${DAY_LABELS[selectedDay]} régénéré !`);
+      toast.success(`Jour ${selectedDay} régénéré !`);
     } catch {
       toast.error("Impossible de régénérer le jour");
     }
@@ -109,23 +108,23 @@ export default function DashboardPage() {
         portions: planData.portions,
         region: country,
       });
-      toast.success(`${DAY_LABELS[selectedDay]} régénéré !`);
+      toast.success(`Jour ${selectedDay} régénéré !`);
     } catch {
       toast.error("Impossible de régénérer le jour");
     }
   };
 
-  const handleRegenerateWeek = async () => {
+  const handleRegenerateMonth = async () => {
     if (!planData?.portions) return;
 
     try {
-      await regenerateWeekMutation.mutateAsync({
+      await regenerateMonthMutation.mutateAsync({
         portions: planData.portions,
         region: country,
       });
-      toast.success("Menu de la semaine régénéré !");
+      toast.success("Menu du mois régénéré !");
     } catch {
-      toast.error("Impossible de régénérer la semaine");
+      toast.error("Impossible de régénérer le mois");
     }
   };
 
@@ -147,7 +146,7 @@ export default function DashboardPage() {
   }
 
   const isRegenerating =
-    regenerateDayMutation.isPending || regenerateWeekMutation.isPending;
+    regenerateDayMutation.isPending || regenerateMonthMutation.isPending;
 
   return (
     <div className="min-h-screen bg-background">
@@ -162,7 +161,7 @@ export default function DashboardPage() {
               <h1 className="text-lg font-bold text-foreground">NutriPlan</h1>
               <p className="text-xs text-muted-foreground flex items-center gap-1">
                 <Calendar className="w-3 h-3" />
-                Menu de la semaine
+                Menu du mois
               </p>
             </div>
           </div>
@@ -190,9 +189,9 @@ export default function DashboardPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={handleRegenerateWeek}
+              onClick={handleRegenerateMonth}
               disabled={isLoading || isRegenerating}
-              aria-label="Régénérer la semaine"
+              aria-label="Régénérer le mois"
             >
               {isRegenerating ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -211,7 +210,7 @@ export default function DashboardPage() {
           <WeeklyCalorieHeader
             calories={planData.calories}
             portions={planData.portions}
-            selectedDay={selectedDay}
+            selectedDayLabel={`Jour ${selectedDay}`}
           />
         </section>
 
@@ -220,6 +219,7 @@ export default function DashboardPage() {
           <DaySelector
             selectedDay={selectedDay}
             onSelectDay={setSelectedDay}
+            days={monthlyMenuData?.summary.daysGenerated || 30}
           />
         </section>
 
@@ -227,7 +227,7 @@ export default function DashboardPage() {
         <section>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-foreground opacity-0 animate-fade-up stagger-2">
-              {DAY_LABELS[selectedDay]}
+              Jour {selectedDay}
             </h2>
             <Button
               variant="ghost"
@@ -250,7 +250,7 @@ export default function DashboardPage() {
               <p className="text-destructive mb-4">
                 Erreur lors du chargement : {error?.message}
               </p>
-              <Button onClick={handleRegenerateWeek} variant="outline">
+              <Button onClick={handleRegenerateMonth} variant="outline">
                 Réessayer
               </Button>
             </div>
@@ -279,7 +279,7 @@ export default function DashboardPage() {
                 <p className="text-muted-foreground mb-4">
                   Aucun menu généré pour ce jour.
                 </p>
-                <Button onClick={handleRegenerateWeek} disabled={isRegenerating}>
+                <Button onClick={handleRegenerateMonth} disabled={isRegenerating}>
                   {isRegenerating ? (
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   ) : (

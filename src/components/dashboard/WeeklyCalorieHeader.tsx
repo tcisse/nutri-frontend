@@ -1,19 +1,19 @@
 "use client";
 
 import { Flame, Utensils, Calendar } from "lucide-react";
-import type { PortionBudget, DayOfWeek } from "@/types";
-import { FOOD_GROUP_LABELS, DAY_LABELS } from "@/types";
+import type { PortionBudget } from "@/types";
+import { FOOD_GROUP_LABELS } from "@/types";
 
 interface WeeklyCalorieHeaderProps {
   calories: number;
   portions: PortionBudget;
-  selectedDay: DayOfWeek;
+  selectedDayLabel: string;
 }
 
 export const WeeklyCalorieHeader = ({
   calories,
   portions,
-  selectedDay,
+  selectedDayLabel,
 }: WeeklyCalorieHeaderProps) => {
   const portionItems = [
     { key: "starch" as const, emoji: "🍚" },
@@ -30,7 +30,7 @@ export const WeeklyCalorieHeader = ({
       <div className="flex items-center justify-center gap-2 mb-4">
         <Calendar className="w-4 h-4 text-primary" />
         <span className="text-sm font-medium text-primary">
-          {DAY_LABELS[selectedDay]}
+          {selectedDayLabel}
         </span>
       </div>
 
