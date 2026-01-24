@@ -12,17 +12,19 @@ import { Sparkles, ArrowLeft, Loader2, Download, FileText, Printer } from "lucid
 const loadInitialData = (): {
   planData: CalculateResponse | null;
   country: Country;
+  userFullName: string;
   shouldRedirect: boolean;
 } => {
   if (typeof window === "undefined") {
-    return { planData: null, country: "general", shouldRedirect: false };
+    return { planData: null, country: "general", userFullName: "", shouldRedirect: false };
   }
 
   const storedPlan = sessionStorage.getItem("nutritionPlan");
   const storedProfile = sessionStorage.getItem("userProfile");
+  const userFullName = sessionStorage.getItem("userFullName") || "";
 
   if (!storedPlan) {
-    return { planData: null, country: "general", shouldRedirect: true };
+    return { planData: null, country: "general", userFullName: "", shouldRedirect: true };
   }
 
   try {
@@ -37,14 +39,14 @@ const loadInitialData = (): {
           // Ignore
         }
       }
-      return { planData: parsed as CalculateResponse, country, shouldRedirect: false };
+      return { planData: parsed as CalculateResponse, country, userFullName, shouldRedirect: false };
     } else {
       sessionStorage.removeItem("nutritionPlan");
       sessionStorage.removeItem("userProfile");
-      return { planData: null, country: "general", shouldRedirect: true };
+      return { planData: null, country: "general", userFullName: "", shouldRedirect: true };
     }
   } catch {
-    return { planData: null, country: "general", shouldRedirect: true };
+    return { planData: null, country: "general", userFullName: "", shouldRedirect: true };
   }
 };
 
@@ -57,6 +59,7 @@ export default function ExportPage() {
 
   const [planData] = useState<CalculateResponse | null>(initialData.planData);
   const [country] = useState<Country>(initialData.country);
+  const userFullName = initialData.userFullName;
 
   // Redirection si pas de données
   useEffect(() => {
@@ -200,6 +203,11 @@ export default function ExportPage() {
             {/* En-tête du PDF */}
             <div className="text-center mb-8 pb-6 border-b-2 border-primary">
               <h1 className="text-3xl font-bold text-primary mb-2">🥗 NutriPlan</h1>
+              {userFullName && (
+                <p className="text-lg font-semibold text-foreground mb-1">
+                  {userFullName}
+                </p>
+              )}
               <p className="text-muted-foreground">
                 Votre plan alimentaire personnalisé pour le mois
               </p>

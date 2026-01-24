@@ -1,5 +1,17 @@
 import { z } from "zod";
 
+export const identitySchema = z.object({
+  fullName: z
+    .string({ message: "Le nom est requis" })
+    .min(3, "Le nom doit contenir au moins 3 caractères"),
+  email: z
+    .string({ message: "L'email est requis" })
+    .email("L'email est invalide"),
+  password: z
+    .string({ message: "Le mot de passe est requis" })
+    .min(6, "Le mot de passe doit contenir au moins 6 caractères"),
+});
+
 export const physicalInfoSchema = z.object({
   age: z
     .number({ message: "L'âge doit être un nombre valide" })
@@ -15,4 +27,5 @@ export const physicalInfoSchema = z.object({
     .max(250, "La taille maximum est 250 cm"),
 });
 
+export type IdentityFormData = z.infer<typeof identitySchema>;
 export type PhysicalInfoFormData = z.infer<typeof physicalInfoSchema>;

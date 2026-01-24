@@ -2,7 +2,7 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { physicalInfoSchema, type PhysicalInfoFormData } from "@/lib/validations";
@@ -32,72 +32,63 @@ export const StepPhysical = ({ values, onChange }: StepPhysicalProps) => {
     },
   });
 
-  const watchedValues = watch();
+  const lastSentRef = useRef<string>("");
+  const age = watch("age");
+  const weight = watch("weight");
+  const height = watch("height");
 
-  // Update parent state when form values change and are valid
   useEffect(() => {
-    if (
-      isValid &&
-      watchedValues.age &&
-      watchedValues.weight &&
-      watchedValues.height
-    ) {
-      onChange({
-        age: watchedValues.age,
-        weight: watchedValues.weight,
-        height: watchedValues.height,
-      });
+    if (isValid && age && weight && height) {
+      const key = `${age}|${weight}|${height}`;
+      if (key !== lastSentRef.current) {
+        lastSentRef.current = key;
+        onChange({ age, weight, height });
+      }
     }
-  }, [watchedValues, isValid, onChange]);
+  }, [age, weight, height, isValid, onChange]);
 
-  const inputFields = [
+  const fields = [
     {
-      id: "age",
+      id: "age" as const,
       label: "Âge",
       placeholder: "25",
       unit: "ans",
       icon: Calendar,
-      delay: "stagger-1",
     },
     {
-      id: "weight",
+      id: "weight" as const,
       label: "Poids",
       placeholder: "70",
       unit: "kg",
       icon: Weight,
-      delay: "stagger-2",
     },
     {
-      id: "height",
+      id: "height" as const,
       label: "Taille",
       placeholder: "175",
       unit: "cm",
       icon: Ruler,
-      delay: "stagger-3",
     },
-  ] as const;
+  ];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div className="text-center space-y-2">
         <h2 className="text-2xl font-bold text-foreground">
-          Vos informations physiques
+          Vos mesures
         </h2>
         <p className="text-muted-foreground">
           Ces données permettent de calculer vos besoins
         </p>
       </div>
 
-      <div className="space-y-5 max-w-sm mx-auto">
-        {inputFields.map((field) => {
+      <div className="space-y-4 max-w-sm mx-auto">
+        {fields.map((field) => {
           const Icon = field.icon;
           const error = errors[field.id];
 
           return (
-            <div
-              key={field.id}
-              className={`space-y-2 opacity-0 animate-fade-up ${field.delay}`}
-            >
+            <div key={field.id} className="space-y-2">
               <Label
                 htmlFor={field.id}
                 className="text-sm font-medium text-foreground flex items-center gap-2"
@@ -117,7 +108,6 @@ export const StepPhysical = ({ values, onChange }: StepPhysicalProps) => {
                       ? "border-destructive focus:ring-destructive/20"
                       : "border-border focus:border-primary"
                   }`}
-                  aria-describedby={error ? `${field.id}-error` : undefined}
                   aria-invalid={!!error}
                 />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">
@@ -125,13 +115,7 @@ export const StepPhysical = ({ values, onChange }: StepPhysicalProps) => {
                 </span>
               </div>
               {error && (
-                <p
-                  id={`${field.id}-error`}
-                  className="text-sm text-destructive animate-fade-up"
-                  role="alert"
-                >
-                  {error.message}
-                </p>
+                <p className="text-sm text-destructive">{error.message}</p>
               )}
             </div>
           );

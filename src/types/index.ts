@@ -259,6 +259,51 @@ export const DAYS_ORDER: DayOfWeek[] = [
 export const MONTH_DAYS: DayOfMonth[] = Array.from({ length: 31 }, (_, i) => i + 1);
 
 // ============================================
+// User & Session (API persistence)
+// ============================================
+
+export interface UserData {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: string;
+  gender: Gender;
+  height: number;
+  country: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SessionData {
+  id: string;
+  userId: string;
+  month: number;
+  weight: number;
+  age: number;
+  activityLevel: ActivityLevel;
+  goal: Goal;
+  rate: WeightChangeRate | null;
+  bmr: number;
+  tdee: number;
+  targetCalories: number;
+  portionBudget: PortionBudget;
+  createdAt: string;
+  menu: MenuData | null;
+}
+
+export interface MenuData {
+  id: string;
+  sessionId: string;
+  data: unknown;
+  createdAt: string;
+}
+
+export interface UserWithSession extends UserData {
+  latestSession: SessionData | null;
+}
+
+// ============================================
 // Onboarding
 // ============================================
 
@@ -269,8 +314,8 @@ export interface OnboardingStep {
 }
 
 export const ONBOARDING_STEPS: OnboardingStep[] = [
-  { id: 1, title: "Genre", description: "Sélectionnez votre genre" },
-  { id: 2, title: "Profil", description: "Vos informations physiques" },
+  { id: 1, title: "Identité", description: "Nom, mot de passe et sexe" },
+  { id: 2, title: "Mesures", description: "Poids, taille et âge" },
   { id: 3, title: "Activité", description: "Votre niveau d'activité" },
   { id: 4, title: "Objectif", description: "Votre objectif nutritionnel" },
   { id: 5, title: "Rythme", description: "Votre rythme souhaité" },

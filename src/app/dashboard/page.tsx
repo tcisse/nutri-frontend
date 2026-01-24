@@ -19,6 +19,8 @@ import {
   Loader2,
   Calendar,
   FileDown,
+  TrendingUp,
+  CalendarPlus,
 } from "lucide-react";
 
 const loadInitialData = (): {
@@ -76,6 +78,15 @@ export default function DashboardPage() {
       router.push("/onboarding");
     }
   }, [initialData.shouldRedirect, router]);
+
+  // Restore original sessionId if viewing an old session's menu
+  useEffect(() => {
+    const previousSessionId = sessionStorage.getItem("previousSessionId");
+    if (previousSessionId) {
+      sessionStorage.setItem("sessionId", previousSessionId);
+      sessionStorage.removeItem("previousSessionId");
+    }
+  }, []);
 
   const isReady = planData !== null;
 
@@ -146,6 +157,10 @@ export default function DashboardPage() {
     router.push("/dashboard/export");
   }, [router]);
 
+  const handleProgress = useCallback(() => {
+    router.push("/dashboard/progress");
+  }, [router]);
+
   // Show loading while checking sessionStorage
   if (!isReady || !planData) {
     return (
@@ -185,6 +200,26 @@ export default function DashboardPage() {
             >
               <ArrowLeft className="w-4 h-4 mr-1" />
               <span className="hidden sm:inline">Modifier</span>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => router.push("/new-session")}
+              aria-label="Nouveau mois"
+              className="text-primary border-primary/30 hover:bg-primary/10"
+            >
+              <CalendarPlus className="w-4 h-4 sm:mr-1" />
+              <span className="hidden sm:inline">Nouveau mois</span>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleProgress}
+              aria-label="Ma progression"
+              className="text-primary border-primary/30 hover:bg-primary/10"
+            >
+              <TrendingUp className="w-4 h-4 sm:mr-1" />
+              <span className="hidden sm:inline">Progression</span>
             </Button>
             <Button
               variant="outline"

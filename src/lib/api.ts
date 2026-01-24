@@ -17,6 +17,8 @@ import type {
   BackendMonthlyMenuResponse,
   MonthlyMenuResponse,
   DayOfMonth,
+  UserData,
+  SessionData,
 } from "@/types";
 
 // Create axios instance with base configuration
@@ -383,6 +385,92 @@ export const regenerateMonthDay = async (
   }>("/regenerate-month-day", payload);
 
   return transformDailyMenuToMeals(response.data.data.menu as unknown as DailyMenuData, day - 1);
+};
+
+// ============================================
+// User API Functions
+// ============================================
+
+/**
+ * Register a new user
+ * POST /api/users
+ */
+export const createUserApi = async (data: {
+  email: string;
+  firstName: string;
+  lastName: string;
+  password: string;
+  gender: string;
+  height: number;
+  country: string;
+}): Promise<{ user: UserData; token: string }> => {
+  const response = await api.post<{ success: boolean; data: { user: UserData; token: string } }>("/users", data);
+  return response.data.data;
+};
+
+/**
+ * Login user
+ * POST /api/users/login
+ */
+export const loginUserApi = async (email: string, password: string): Promise<{ user: UserData & { sessions?: Array<{ id: string; month: number; weight: number; age: number; activityLevel: string; goal: string; rate: string | null; bmr: number; tdee: number; targetCalories: number; portionBudget: string; createdAt: string }> }; token: string }> => {
+  const response = await api.post<{ success: boolean; data: { user: UserData & { sessions?: Array<{ id: string; month: number; weight: number; age: number; activityLevel: string; goal: string; rate: string | null; bmr: number; tdee: number; targetCalories: number; portionBudget: string; createdAt: string }> }; token: string } }>("/users/login", { email, password });
+  return response.data.data;
+};
+
+/**
+ * Create a new session for a user
+ * POST /api/users/:id/sessions
+ */
+export const createSessionApi = async (
+  userId: string,
+  data: {
+    weight: number;
+    age: number;
+    activityLevel: string;
+    goal: string;
+    rate?: string;
+  }
+): Promise<SessionData> => {
+  const response = await api.post<{ success: boolean; data: SessionData }>(
+    `/users/${userId}/sessions`,
+    data
+  );
+  return response.data.data;
+};
+
+/**
+ * Get all sessions for a user (progression)
+ * GET /api/users/:id/sessions
+ */
+export const getUserSessions = async (userId: string): Promise<SessionData[]> => {
+  const response = await api.get<{ success: boolean; data: SessionData[] }>(
+    `/users/${userId}/sessions`
+  );
+  return response.data.data;
+};
+
+/**
+ * Get saved menu for a session
+ * GET /api/users/sessions/:sessionId/menu
+ */
+export const getSessionMenuApi = async (sessionId: string): Promise<MonthlyMenuResponse | null> => {
+  try {
+    const response = await api.get<{ success: boolean; data: { id: string; sessionId: string; data: MonthlyMenuResponse; createdAt: string } }>(
+      `/users/sessions/${sessionId}/menu`
+    );
+    return response.data.data.data;
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * Save menu for a session
+ * POST /api/users/sessions/:sessionId/menu
+ */
+export const saveMenuApi = async (sessionId: string, menuData: unknown) => {
+  const response = await api.post(`/users/sessions/${sessionId}/menu`, { data: menuData });
+  return response.data;
 };
 
 export default api;

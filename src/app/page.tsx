@@ -103,6 +103,17 @@ export default function HomePage() {
           <p className="text-sm text-muted-foreground opacity-0 animate-fade-up stagger-4">
             Répondez à quelques questions • Moins de 2 minutes
           </p>
+
+          {/* Login link */}
+          <p className="text-sm text-muted-foreground opacity-0 animate-fade-up stagger-4">
+            Déjà inscrit ?{" "}
+            <button
+              onClick={() => router.push("/login")}
+              className="text-primary font-medium hover:underline"
+            >
+              Se connecter
+            </button>
+          </p>
         </div>
       </main>
 

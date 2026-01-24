@@ -12,6 +12,9 @@ import type {
 
 export interface OnboardingState {
   step: number;
+  fullName: string | null;
+  email: string | null;
+  password: string | null;
   gender: Gender | null;
   age: number | null;
   weight: number | null;
@@ -24,6 +27,9 @@ export interface OnboardingState {
 
 const initialState: OnboardingState = {
   step: 1,
+  fullName: null,
+  email: null,
+  password: null,
   gender: null,
   age: null,
   weight: null,
@@ -37,11 +43,13 @@ const initialState: OnboardingState = {
 export const useOnboardingStore = () => {
   const [state, setState] = useState<OnboardingState>(initialState);
 
-  const setStep = useCallback((step: number) => {
-    setState((prev) => ({ ...prev, step }));
-  }, []);
-
-  // Nombre total d'étapes: 6 si goal != maintain, sinon 5 (on skip rate)
+  // Steps:
+  // 1: Identity (fullName, password, gender)
+  // 2: Physical (age, weight, height)
+  // 3: Activity
+  // 4: Goal
+  // 5: Rate (only if goal != maintain) / Country (if maintain)
+  // 6: Country (only if goal != maintain)
   const getTotalSteps = useCallback((goal: Goal | null): number => {
     return goal === "maintain" ? 5 : 6;
   }, []);
@@ -49,9 +57,9 @@ export const useOnboardingStore = () => {
   const nextStep = useCallback(() => {
     setState((prev) => {
       const totalSteps = getTotalSteps(prev.goal);
-      // Si on est à l'étape 4 (goal) et goal == maintain, skip l'étape 5 (rate)
       if (prev.step === 4 && prev.goal === "maintain") {
-        return { ...prev, step: Math.min(prev.step + 2, totalSteps) };
+        // Skip rate step, go directly to country (step 5 in maintain flow)
+        return { ...prev, step: Math.min(prev.step + 1, totalSteps) };
       }
       return { ...prev, step: Math.min(prev.step + 1, totalSteps) };
     });
@@ -59,17 +67,16 @@ export const useOnboardingStore = () => {
 
   const prevStep = useCallback(() => {
     setState((prev) => {
-      // Si on est à l'étape 6 (country) et goal == maintain, on revient à 4 (goal)
-      if (prev.step === 6 && prev.goal === "maintain") {
-        return { ...prev, step: 4 };
-      }
       return { ...prev, step: Math.max(prev.step - 1, 1) };
     });
   }, []);
 
-  const setGender = useCallback((gender: Gender) => {
-    setState((prev) => ({ ...prev, gender }));
-  }, []);
+  const setIdentity = useCallback(
+    (info: { fullName: string; email: string; password: string; gender: Gender }) => {
+      setState((prev) => ({ ...prev, ...info }));
+    },
+    []
+  );
 
   const setPhysicalInfo = useCallback(
     (info: { age: number; weight: number; height: number }) => {
@@ -86,7 +93,6 @@ export const useOnboardingStore = () => {
     setState((prev) => ({
       ...prev,
       goal,
-      // Reset rate si on passe à "maintain"
       rate: goal === "maintain" ? null : prev.rate,
     }));
   }, []);
@@ -105,6 +111,9 @@ export const useOnboardingStore = () => {
 
   const isComplete = useCallback((): boolean => {
     const baseComplete = !!(
+      state.fullName &&
+      state.email &&
+      state.password &&
       state.gender &&
       state.age &&
       state.weight &&
@@ -114,7 +123,6 @@ export const useOnboardingStore = () => {
       state.country
     );
 
-    // Si goal != maintain, on doit aussi avoir rate
     if (state.goal && state.goal !== "maintain") {
       return baseComplete && !!state.rate;
     }
@@ -140,7 +148,15 @@ export const useOnboardingStore = () => {
   const canProceed = useCallback((): boolean => {
     switch (state.step) {
       case 1:
-        return !!state.gender;
+        return !!(
+          state.fullName &&
+          state.fullName.length >= 3 &&
+          state.email &&
+          state.email.includes("@") &&
+          state.password &&
+          state.password.length >= 6 &&
+          state.gender
+        );
       case 2:
         return !!(state.age && state.weight && state.height);
       case 3:
@@ -148,8 +164,6 @@ export const useOnboardingStore = () => {
       case 4:
         return !!state.goal;
       case 5:
-        // Si goal == maintain, cette étape est country (skipped rate)
-        // Sinon c'est l'étape rate
         if (state.goal === "maintain") {
           return !!state.country;
         }
@@ -163,10 +177,9 @@ export const useOnboardingStore = () => {
 
   return {
     state,
-    setStep,
     nextStep,
     prevStep,
-    setGender,
+    setIdentity,
     setPhysicalInfo,
     setActivity,
     setGoal,

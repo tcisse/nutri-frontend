@@ -1,4 +1,4 @@
-export { StepGender } from "./StepGender";
+export { StepIdentity } from "./StepIdentity";
 export { StepPhysical } from "./StepPhysical";
 export { StepActivity } from "./StepActivity";
 export { StepGoal } from "./StepGoal";

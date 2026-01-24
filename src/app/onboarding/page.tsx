@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   ProgressBar,
-  StepGender,
+  StepIdentity,
   StepPhysical,
   StepActivity,
   StepGoal,
@@ -14,6 +14,8 @@ import {
 } from "@/components/onboarding";
 import { useOnboardingStore } from "@/hooks/useOnboardingStore";
 import { useCalculate } from "@/hooks/useCalculate";
+import { createUserApi, createSessionApi } from "@/lib/api";
+import { setUserToken } from "@/lib/cookies";
 import { ArrowLeft, ArrowRight, Loader2, Sparkles } from "lucide-react";
 
 export default function OnboardingPage() {
@@ -22,7 +24,7 @@ export default function OnboardingPage() {
     state,
     nextStep,
     prevStep,
-    setGender,
+    setIdentity,
     setPhysicalInfo,
     setActivity,
     setGoal,
@@ -43,11 +45,45 @@ export default function OnboardingPage() {
     }
 
     try {
+      // Parse fullName into firstName/lastName
+      const nameParts = (state.fullName || "").trim().split(/\s+/);
+      const firstName = nameParts[0] || "";
+      const lastName = nameParts.slice(1).join(" ") || firstName;
+
+      // Create user account
+      const { user: newUser, token } = await createUserApi({
+        email: state.email!,
+        firstName,
+        lastName,
+        password: state.password!,
+        gender: state.gender!,
+        height: state.height!,
+        country: state.country!,
+      });
+
+      // Store auth token
+      setUserToken(token);
+
+      // Create session
+      const session = await createSessionApi(newUser.id, {
+        weight: state.weight!,
+        age: state.age!,
+        activityLevel: state.activity!,
+        goal: state.goal!,
+        rate: state.goal !== "maintain" ? state.rate! : undefined,
+      });
+
+      // Calculate for frontend display
       const result = await calculateMutation.mutateAsync(profile);
 
-      // Store profile and result for dashboard
+      // Store in sessionStorage for dashboard
+      sessionStorage.setItem("userId", newUser.id);
+      sessionStorage.setItem("sessionId", session.id);
       sessionStorage.setItem("userProfile", JSON.stringify(profile));
       sessionStorage.setItem("nutritionPlan", JSON.stringify(result));
+      sessionStorage.setItem("userName", firstName);
+      sessionStorage.setItem("userFullName", state.fullName!.trim());
+      sessionStorage.setItem("userMonth", String(session.month));
 
       toast.success("Votre plan a été calculé !");
       router.push("/dashboard");
@@ -70,7 +106,17 @@ export default function OnboardingPage() {
   const renderStep = () => {
     switch (state.step) {
       case 1:
-        return <StepGender value={state.gender} onChange={setGender} />;
+        return (
+          <StepIdentity
+            values={{
+              fullName: state.fullName,
+              email: state.email,
+              password: state.password,
+              gender: state.gender,
+            }}
+            onChange={setIdentity}
+          />
+        );
       case 2:
         return (
           <StepPhysical
@@ -87,7 +133,6 @@ export default function OnboardingPage() {
       case 4:
         return <StepGoal value={state.goal} onChange={setGoal} />;
       case 5:
-        // Si goal == maintain, cette étape est country (rate skipped)
         if (state.goal === "maintain") {
           return <StepCountry value={state.country} onChange={setCountry} />;
         }
@@ -130,26 +175,24 @@ export default function OnboardingPage() {
       {/* Navigation buttons */}
       <footer className="py-6 px-4 border-t border-border/50 bg-card/50">
         <div className="max-w-md mx-auto flex items-center justify-between gap-4">
-          {/* Back button */}
           <Button
             variant="outline"
             size="lg"
             onClick={prevStep}
             disabled={state.step === 1 || isLoading}
             className="flex-1 h-12"
-            aria-label="Retour à l'étape précédente"
+            aria-label="Retour"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Retour
           </Button>
 
-          {/* Next/Submit button */}
           <Button
             size="lg"
             onClick={handleNext}
             disabled={!canProceed() || isLoading}
             className="flex-1 h-12"
-            aria-label={isLastStep ? "Calculer mon plan" : "Étape suivante"}
+            aria-label={isLastStep ? "Calculer mon plan" : "Suivant"}
           >
             {isLoading ? (
               <>
