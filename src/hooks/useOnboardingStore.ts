@@ -23,6 +23,7 @@ export interface OnboardingState {
   goal: Goal | null;
   rate: WeightChangeRate | null;
   country: Country | null;
+  licenseCode?: string | null;
 }
 
 const initialState: OnboardingState = {
@@ -38,6 +39,7 @@ const initialState: OnboardingState = {
   goal: null,
   rate: null,
   country: null,
+  licenseCode: null,
 };
 
 export const useOnboardingStore = () => {
@@ -101,8 +103,16 @@ export const useOnboardingStore = () => {
     setState((prev) => ({ ...prev, rate }));
   }, []);
 
-  const setCountry = useCallback((country: Country) => {
-    setState((prev) => ({ ...prev, country }));
+  const setCountry = useCallback((country: Country, licenseCode?: string) => {
+    setState((prev) => ({
+      ...prev,
+      country,
+      ...(licenseCode !== undefined && { licenseCode })
+    }));
+  }, []);
+
+  const setLicenseCode = useCallback((licenseCode: string | null) => {
+    setState((prev) => ({ ...prev, licenseCode }));
   }, []);
 
   const reset = useCallback(() => {
@@ -165,11 +175,13 @@ export const useOnboardingStore = () => {
         return !!state.goal;
       case 5:
         if (state.goal === "maintain") {
-          return !!state.country;
+          // At step 5 for maintain goal, need country AND license
+          return !!(state.country && state.licenseCode && state.licenseCode.trim());
         }
         return !!state.rate;
       case 6:
-        return !!state.country;
+        // At step 6, need country AND license
+        return !!(state.country && state.licenseCode && state.licenseCode.trim());
       default:
         return false;
     }
@@ -185,6 +197,7 @@ export const useOnboardingStore = () => {
     setGoal,
     setRate,
     setCountry,
+    setLicenseCode,
     reset,
     isComplete,
     getProfile,

@@ -21,6 +21,8 @@ import {
   FileDown,
   TrendingUp,
   CalendarPlus,
+  User,
+  Key,
 } from "lucide-react";
 
 const loadInitialData = (): {
@@ -115,8 +117,19 @@ export default function DashboardPage() {
         region: country,
       });
       toast.success(`Jour ${selectedDay} régénéré !`);
-    } catch {
-      toast.error("Impossible de régénérer le jour");
+    } catch (error: any) {
+      const errorMessage = error?.message || "Impossible de régénérer le jour";
+      if (errorMessage.includes("licence") || errorMessage.includes("Aucune licence active")) {
+        toast.error("Licence requise pour générer des menus", {
+          description: "Activez une licence depuis votre profil",
+          action: {
+            label: "Activer",
+            onClick: () => router.push("/dashboard/profile"),
+          },
+        });
+      } else {
+        toast.error(errorMessage);
+      }
     }
   };
 
@@ -130,8 +143,19 @@ export default function DashboardPage() {
         region: country,
       });
       toast.success(`Jour ${selectedDay} régénéré !`);
-    } catch {
-      toast.error("Impossible de régénérer le jour");
+    } catch (error: any) {
+      const errorMessage = error?.message || "Impossible de régénérer le jour";
+      if (errorMessage.includes("licence") || errorMessage.includes("Aucune licence active")) {
+        toast.error("Licence requise pour générer des menus", {
+          description: "Activez une licence depuis votre profil",
+          action: {
+            label: "Activer",
+            onClick: () => router.push("/dashboard/profile"),
+          },
+        });
+      } else {
+        toast.error(errorMessage);
+      }
     }
   };
 
@@ -144,8 +168,19 @@ export default function DashboardPage() {
         region: country,
       });
       toast.success("Menu du mois régénéré !");
-    } catch {
-      toast.error("Impossible de régénérer le mois");
+    } catch (error: any) {
+      const errorMessage = error?.message || "Impossible de régénérer le mois";
+      if (errorMessage.includes("licence") || errorMessage.includes("Aucune licence active")) {
+        toast.error("Licence requise pour générer des menus", {
+          description: "Activez une licence depuis votre profil",
+          action: {
+            label: "Activer",
+            onClick: () => router.push("/dashboard/profile"),
+          },
+        });
+      } else {
+        toast.error(errorMessage);
+      }
     }
   };
 
@@ -160,6 +195,14 @@ export default function DashboardPage() {
   const handleProgress = useCallback(() => {
     router.push("/dashboard/progress");
   }, [router]);
+
+  const handleProfile = useCallback(() => {
+    router.push("/dashboard/profile");
+  }, [router]);
+
+  // Check if error is a license error
+  const isLicenseError = error?.message?.includes("licence") ||
+    error?.message?.includes("Aucune licence active");
 
   // Show loading while checking sessionStorage
   if (!isReady || !planData) {
@@ -192,6 +235,15 @@ export default function DashboardPage() {
           </div>
 
           <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleProfile}
+              aria-label="Mon profil"
+            >
+              <User className="w-4 h-4 sm:mr-1" />
+              <span className="hidden sm:inline">Profil</span>
+            </Button>
             <Button
               variant="ghost"
               size="sm"
@@ -291,13 +343,38 @@ export default function DashboardPage() {
           </div>
 
           {isError && (
-            <div className="text-center py-8">
-              <p className="text-destructive mb-4">
-                Erreur lors du chargement : {error?.message}
-              </p>
-              <Button onClick={handleRegenerateMonth} variant="outline">
-                Réessayer
-              </Button>
+            <div className="text-center py-12 px-6">
+              {isLicenseError ? (
+                <div className="max-w-md mx-auto space-y-4">
+                  <div className="w-16 h-16 rounded-full bg-yellow-100 dark:bg-yellow-900/20 flex items-center justify-center mx-auto">
+                    <Key className="w-8 h-8 text-yellow-600 dark:text-yellow-400" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-foreground">
+                    Licence requise
+                  </h3>
+                  <p className="text-muted-foreground">
+                    Vous devez activer une licence pour générer vos menus personnalisés
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
+                    <Button onClick={handleProfile} className="gap-2">
+                      <Key className="w-4 h-4" />
+                      Activer une licence
+                    </Button>
+                    <Button onClick={handleBack} variant="outline">
+                      Retour
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="max-w-md mx-auto space-y-4">
+                  <p className="text-destructive mb-4">
+                    Erreur lors du chargement : {error?.message}
+                  </p>
+                  <Button onClick={handleRegenerateMonth} variant="outline">
+                    Réessayer
+                  </Button>
+                </div>
+              )}
             </div>
           )}
 

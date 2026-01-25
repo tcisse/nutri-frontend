@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { getAdminToken, removeAdminToken } from "@/lib/cookies";
-import { BarChart3, Users, LogOut, Shield } from "lucide-react";
+import { BarChart3, Users, LogOut, Shield, Key } from "lucide-react";
 
 // Helper to load admin name synchronously
 const loadAdminName = (): string => {
@@ -52,6 +52,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const navItems = [
     { href: "/admin", label: "Dashboard", icon: BarChart3 },
     { href: "/admin/users", label: "Utilisateurs", icon: Users },
+    { href: "/admin/licenses", label: "Licences", icon: Key },
   ];
 
   return (

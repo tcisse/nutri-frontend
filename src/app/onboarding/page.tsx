@@ -15,6 +15,7 @@ import {
 import { useOnboardingStore } from "@/hooks/useOnboardingStore";
 import { useCalculate } from "@/hooks/useCalculate";
 import { createUserApi, createSessionApi } from "@/lib/api";
+import { activateLicenseApi } from "@/lib/licenseApi";
 import { setUserToken } from "@/lib/cookies";
 import { ArrowLeft, ArrowRight, Loader2, Sparkles } from "lucide-react";
 
@@ -63,6 +64,23 @@ export default function OnboardingPage() {
 
       // Store auth token
       setUserToken(token);
+
+      // Activate license (required)
+      if (!state.licenseCode || !state.licenseCode.trim()) {
+        toast.error("Une licence est requise pour continuer");
+        return;
+      }
+
+      try {
+        await activateLicenseApi(newUser.id, state.licenseCode.trim());
+        toast.success("Licence activée avec succès!");
+      } catch (error: any) {
+        // Blocking error - license is required
+        toast.error(
+          error?.response?.data?.error || "Code de licence invalide ou déjà utilisé"
+        );
+        return;
+      }
 
       // Create session
       const session = await createSessionApi(newUser.id, {
@@ -134,11 +152,23 @@ export default function OnboardingPage() {
         return <StepGoal value={state.goal} onChange={setGoal} />;
       case 5:
         if (state.goal === "maintain") {
-          return <StepCountry value={state.country} onChange={setCountry} />;
+          return (
+            <StepCountry
+              value={state.country}
+              licenseCode={state.licenseCode}
+              onChange={setCountry}
+            />
+          );
         }
         return <StepRate value={state.rate} goal={state.goal} onChange={setRate} />;
       case 6:
-        return <StepCountry value={state.country} onChange={setCountry} />;
+        return (
+          <StepCountry
+            value={state.country}
+            licenseCode={state.licenseCode}
+            onChange={setCountry}
+          />
+        );
       default:
         return null;
     }

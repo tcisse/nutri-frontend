@@ -5,9 +5,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { identitySchema, type IdentityFormData } from "@/lib/validations";
-import { cn } from "@/lib/utils";
-import { User, Lock, Eye, EyeOff, Mail } from "lucide-react";
+import { User, Lock, Eye, EyeOff, Mail, Users } from "lucide-react";
 import type { Gender } from "@/types";
 
 interface StepIdentityProps {
@@ -20,9 +26,9 @@ interface StepIdentityProps {
   onChange: (info: { fullName: string; email: string; password: string; gender: Gender }) => void;
 }
 
-const genderOptions: { value: Gender; label: string; icon: string }[] = [
-  { value: "male", label: "Homme", icon: "👨" },
-  { value: "female", label: "Femme", icon: "👩" },
+const genderOptions: { value: Gender; label: string }[] = [
+  { value: "male", label: "Homme" },
+  { value: "female", label: "Femme" },
 ];
 
 export const StepIdentity = ({ values, onChange }: StepIdentityProps) => {
@@ -169,38 +175,25 @@ export const StepIdentity = ({ values, onChange }: StepIdentityProps) => {
 
         {/* Gender Selection */}
         <div className="space-y-2 pt-2">
-          <Label className="text-sm font-medium text-foreground">Sexe</Label>
-          <div className="grid grid-cols-2 gap-3">
-            {genderOptions.map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                onClick={() => handleGenderSelect(option.value)}
-                aria-label={`Sélectionner ${option.label}`}
-                aria-pressed={selectedGender === option.value}
-                className={cn(
-                  "flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all duration-200 cursor-pointer",
-                  selectedGender === option.value
-                    ? "border-primary bg-primary/5 shadow-md"
-                    : "border-border bg-card hover:border-primary/50"
-                )}
-              >
-                <span className="text-3xl mb-1" role="img" aria-hidden="true">
-                  {option.icon}
-                </span>
-                <span
-                  className={cn(
-                    "text-sm font-semibold",
-                    selectedGender === option.value
-                      ? "text-primary"
-                      : "text-foreground"
-                  )}
-                >
+          <Label className="text-sm font-medium text-foreground flex items-center gap-2">
+            <Users className="w-4 h-4 text-primary" />
+            Sexe
+          </Label>
+          <Select
+            value={selectedGender ?? undefined}
+            onValueChange={(value) => handleGenderSelect(value as Gender)}
+          >
+            <SelectTrigger className="h-12 w-full text-lg bg-card border-2 border-border focus:border-primary">
+              <SelectValue placeholder="Sélectionnez votre sexe" />
+            </SelectTrigger>
+            <SelectContent>
+              {genderOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
                   {option.label}
-                </span>
-              </button>
-            ))}
-          </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
     </div>

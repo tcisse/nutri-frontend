@@ -1,4 +1,5 @@
 import axios from "axios";
+import { getUserToken } from "./cookies";
 import type {
   UserProfile,
   CalculateResponse,
@@ -30,9 +31,18 @@ const api = axios.create({
   timeout: 15000, // Augmenté pour les requêtes hebdomadaires
 });
 
-// Request interceptor for logging (dev only)
+// Request interceptor to add user token and logging
 api.interceptors.request.use(
   (config) => {
+    // Add user token to requests
+    if (typeof window !== "undefined") {
+      const token = getUserToken();
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    }
+
+    // Logging (dev only)
     if (process.env.NODE_ENV === "development") {
       console.log(`[API] ${config.method?.toUpperCase()} ${config.url}`, config.data);
     }
@@ -45,6 +55,22 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    // Handle 401 Unauthorized - redirect to login
+    if (error.response?.status === 401 && typeof window !== "undefined") {
+      const currentPath = window.location.pathname;
+      // Don't redirect if already on login or onboarding page
+      if (!currentPath.startsWith("/login") && !currentPath.startsWith("/onboarding")) {
+        window.location.href = "/login";
+      }
+    }
+
+    // Handle 403 with requiresLicense flag
+    if (error.response?.status === 403 && error.response?.data?.requiresLicense) {
+      const message = error.response.data.error || "Aucune licence active";
+      console.error("[API Error - License Required]", message);
+      return Promise.reject(new Error(message));
+    }
+
     const message =
       error.response?.data?.error || error.message || "Une erreur est survenue";
     console.error("[API Error]", message);
