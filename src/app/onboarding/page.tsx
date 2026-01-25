@@ -155,7 +155,7 @@ export default function OnboardingPage() {
           return (
             <StepCountry
               value={state.country}
-              licenseCode={state.licenseCode}
+              licenseCode={state.licenseCode || null}
               onChange={setCountry}
             />
           );
@@ -165,7 +165,7 @@ export default function OnboardingPage() {
         return (
           <StepCountry
             value={state.country}
-            licenseCode={state.licenseCode}
+            licenseCode={state.licenseCode || null}
             onChange={setCountry}
           />
         );
