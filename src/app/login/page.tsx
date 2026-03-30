@@ -62,9 +62,7 @@ export default function LoginPage() {
         router.push("/new-session");
       }
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Email ou mot de passe incorrect"
-      );
+      toast.error(error instanceof Error ? error.message : "Email ou mot de passe incorrect");
     } finally {
       setIsLoading(false);
     }
@@ -81,9 +79,7 @@ export default function LoginPage() {
             </div>
           </div>
           <h1 className="text-2xl font-bold text-foreground">Connexion</h1>
-          <p className="text-muted-foreground text-sm">
-            Accédez à votre plan alimentaire
-          </p>
+          <p className="text-muted-foreground text-sm">Accédez à votre plan alimentaire</p>
         </div>
 
         {/* Form */}

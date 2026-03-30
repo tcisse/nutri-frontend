@@ -74,12 +74,8 @@ export const StepPhysical = ({ values, onChange }: StepPhysicalProps) => {
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <h2 className="text-2xl font-bold text-foreground">
-          Vos mesures
-        </h2>
-        <p className="text-muted-foreground">
-          Ces données permettent de calculer vos besoins
-        </p>
+        <h2 className="text-2xl font-bold text-foreground">Vos mesures</h2>
+        <p className="text-muted-foreground">Ces données permettent de calculer vos besoins</p>
       </div>
 
       <div className="space-y-4 max-w-sm mx-auto">
@@ -114,9 +110,7 @@ export const StepPhysical = ({ values, onChange }: StepPhysicalProps) => {
                   {field.unit}
                 </span>
               </div>
-              {error && (
-                <p className="text-sm text-destructive">{error.message}</p>
-              )}
+              {error && <p className="text-sm text-destructive">{error.message}</p>}
             </div>
           );
         })}

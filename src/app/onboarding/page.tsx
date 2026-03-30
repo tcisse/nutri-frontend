@@ -76,9 +76,7 @@ export default function OnboardingPage() {
         toast.success("Licence activée avec succès!");
       } catch (error: any) {
         // Blocking error - license is required
-        toast.error(
-          error?.response?.data?.error || "Code de licence invalide ou déjà utilisé"
-        );
+        toast.error(error?.response?.data?.error || "Code de licence invalide ou déjà utilisé");
         return;
       }
 
@@ -106,9 +104,7 @@ export default function OnboardingPage() {
       toast.success("Votre plan a été calculé !");
       router.push("/dashboard");
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Une erreur est survenue"
-      );
+      toast.error(error instanceof Error ? error.message : "Une erreur est survenue");
     }
   };
 

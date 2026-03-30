@@ -54,9 +54,7 @@ export const StepRate = ({ value, goal, onChange }: StepRateProps) => {
         <h2 className="text-2xl font-bold text-foreground">
           À quel rythme souhaitez-vous {actionWord} du poids ?
         </h2>
-        <p className="text-muted-foreground">
-          Choisissez un rythme adapté à votre mode de vie
-        </p>
+        <p className="text-muted-foreground">Choisissez un rythme adapté à votre mode de vie</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl mx-auto">
@@ -97,11 +95,7 @@ export const StepRate = ({ value, goal, onChange }: StepRateProps) => {
                     stroke="currentColor"
                     strokeWidth={3}
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M5 13l4 4L19 7"
-                    />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
               )}
@@ -153,9 +147,8 @@ export const StepRate = ({ value, goal, onChange }: StepRateProps) => {
         <div className="max-w-xl mx-auto p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-sm opacity-0 animate-fade-up stagger-5">
           <p className="font-medium">⚠️ Attention</p>
           <p className="mt-1">
-            Un rythme de plus de 1 kg/semaine peut être difficile à maintenir et
-            nécessite un suivi médical. Assurez-vous de consulter un
-            professionnel de santé.
+            Un rythme de plus de 1 kg/semaine peut être difficile à maintenir et nécessite un suivi
+            médical. Assurez-vous de consulter un professionnel de santé.
           </p>
         </div>
       )}

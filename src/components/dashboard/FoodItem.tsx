@@ -14,12 +14,7 @@ interface FoodItemProps {
   isSwapping: boolean;
 }
 
-export const FoodItem = ({
-  food,
-  mealType,
-  onSwap,
-  isSwapping,
-}: FoodItemProps) => {
+export const FoodItem = ({ food, mealType, onSwap, isSwapping }: FoodItemProps) => {
   const [isHovered, setIsHovered] = useState(false);
 
   const handleSwap = async () => {
@@ -55,9 +50,7 @@ export const FoodItem = ({
             >
               {FOOD_GROUP_LABELS[food.group]}
             </span>
-            <span className="text-xs text-muted-foreground">
-              {food.portion}
-            </span>
+            <span className="text-xs text-muted-foreground">{food.portion}</span>
           </div>
         </div>
       </div>

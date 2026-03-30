@@ -58,8 +58,8 @@ export default function HomePage() {
               <span className="block text-primary mt-2">Personnalisé</span>
             </h1>
             <p className="text-lg text-muted-foreground max-w-md mx-auto">
-              Créez un programme nutritionnel adapté à vos besoins, vos
-              objectifs et les aliments de votre région.
+              Créez un programme nutritionnel adapté à vos besoins, vos objectifs et les aliments de
+              votre région.
             </p>
           </div>
 
@@ -75,12 +75,8 @@ export default function HomePage() {
                   <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
                     <Icon className="w-5 h-5 text-primary" />
                   </div>
-                  <p className="font-semibold text-sm text-foreground">
-                    {feature.title}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {feature.description}
-                  </p>
+                  <p className="font-semibold text-sm text-foreground">{feature.title}</p>
+                  <p className="text-xs text-muted-foreground">{feature.description}</p>
                 </div>
               );
             })}

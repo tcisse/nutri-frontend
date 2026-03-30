@@ -18,10 +18,7 @@ export const MealCardSkeleton = () => {
 
       <CardContent className="space-y-2">
         {[1, 2, 3].map((i) => (
-          <div
-            key={i}
-            className="flex items-center gap-3 p-3 rounded-xl bg-secondary/30"
-          >
+          <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-secondary/30">
             <Skeleton className="w-10 h-10 rounded-full" />
             <div className="flex-1 space-y-2">
               <Skeleton className="h-4 w-3/4" />

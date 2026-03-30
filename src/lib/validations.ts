@@ -4,9 +4,7 @@ export const identitySchema = z.object({
   fullName: z
     .string({ message: "Le nom est requis" })
     .min(3, "Le nom doit contenir au moins 3 caractères"),
-  email: z
-    .string({ message: "L'email est requis" })
-    .email("L'email est invalide"),
+  email: z.string({ message: "L'email est requis" }).email("L'email est invalide"),
   password: z
     .string({ message: "Le mot de passe est requis" })
     .min(6, "Le mot de passe doit contenir au moins 6 caractères"),

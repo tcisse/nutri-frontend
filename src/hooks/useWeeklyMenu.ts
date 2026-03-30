@@ -60,8 +60,7 @@ export const useRegenerateMonthDay = () => {
     Error,
     { day: DayOfMonth; portions: PortionBudget; region: string; days?: number }
   >({
-    mutationFn: ({ day, portions, region }) =>
-      regenerateMonthDay(day, portions, region),
+    mutationFn: ({ day, portions, region }) => regenerateMonthDay(day, portions, region),
     onSuccess: (newMeals, { day }) => {
       const sessionId = typeof window !== "undefined" ? sessionStorage.getItem("sessionId") : null;
 

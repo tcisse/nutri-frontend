@@ -119,9 +119,7 @@ export default function ProgressPage() {
         {userName && (
           <div className="text-center">
             <h2 className="text-xl font-bold">{userName}</h2>
-            <p className="text-muted-foreground text-sm">
-              {sessions.length} mois de suivi
-            </p>
+            <p className="text-muted-foreground text-sm">{sessions.length} mois de suivi</p>
           </div>
         )}
 
@@ -133,9 +131,7 @@ export default function ProgressPage() {
             </Card>
             <Card className="p-4 text-center">
               <p className="text-xs text-muted-foreground">Poids actuel</p>
-              <p className="text-xl font-bold">
-                {sessions[sessions.length - 1].weight} kg
-              </p>
+              <p className="text-xl font-bold">{sessions[sessions.length - 1].weight} kg</p>
             </Card>
             <Card className="p-4 text-center">
               <p className="text-xs text-muted-foreground">Variation</p>
@@ -227,7 +223,8 @@ export default function ProgressPage() {
                     <div className="text-right">
                       <p className="font-medium text-sm">{session.weight} kg</p>
                       <p className="text-xs text-muted-foreground">
-                        {Math.round(session.targetCalories)} kcal | {goalLabels[session.goal] || session.goal}
+                        {Math.round(session.targetCalories)} kcal |{" "}
+                        {goalLabels[session.goal] || session.goal}
                       </p>
                     </div>
                     {session.menu && (

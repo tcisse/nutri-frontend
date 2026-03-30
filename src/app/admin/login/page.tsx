@@ -43,7 +43,9 @@ export default function AdminLoginPage() {
             <Shield className="w-6 h-6 text-primary" />
           </div>
           <h1 className="text-xl font-bold">Administration</h1>
-          <p className="text-sm text-muted-foreground">Connectez-vous pour acceder au panneau admin</p>
+          <p className="text-sm text-muted-foreground">
+            Connectez-vous pour acceder au panneau admin
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -82,14 +84,10 @@ export default function AdminLoginPage() {
             </div>
           </div>
 
-          {error && (
-            <p className="text-sm text-destructive text-center">{error}</p>
-          )}
+          {error && <p className="text-sm text-destructive text-center">{error}</p>}
 
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? (
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            ) : null}
+            {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
             Se connecter
           </Button>
         </form>

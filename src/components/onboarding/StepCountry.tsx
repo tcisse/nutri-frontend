@@ -60,7 +60,7 @@ export const StepCountry = ({ value, licenseCode, onChange }: StepCountryProps) 
         parts.push(limitedRest.slice(i, i + 4));
       }
 
-      newValue = parts.filter(p => p.length > 0).join("-");
+      newValue = parts.filter((p) => p.length > 0).join("-");
     } else {
       // If doesn't start with NUTRI yet, limit to 5 characters
       newValue = newValue.slice(0, 5);
@@ -75,12 +75,8 @@ export const StepCountry = ({ value, licenseCode, onChange }: StepCountryProps) 
   return (
     <div className="space-y-8">
       <div className="text-center space-y-2">
-        <h2 className="text-2xl font-bold text-foreground">
-          Dans quel pays habitez-vous ?
-        </h2>
-        <p className="text-muted-foreground">
-          Pour vous proposer des aliments locaux adaptés
-        </p>
+        <h2 className="text-2xl font-bold text-foreground">Dans quel pays habitez-vous ?</h2>
+        <p className="text-muted-foreground">Pour vous proposer des aliments locaux adaptés</p>
       </div>
 
       <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 max-w-xl mx-auto">
@@ -119,11 +115,7 @@ export const StepCountry = ({ value, licenseCode, onChange }: StepCountryProps) 
                     stroke="currentColor"
                     strokeWidth={3}
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M5 13l4 4L19 7"
-                    />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
               )}

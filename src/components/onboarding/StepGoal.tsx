@@ -40,9 +40,7 @@ export const StepGoal = ({ value, onChange }: StepGoalProps) => {
   return (
     <div className="space-y-8">
       <div className="text-center space-y-2">
-        <h2 className="text-2xl font-bold text-foreground">
-          Quel est votre objectif ?
-        </h2>
+        <h2 className="text-2xl font-bold text-foreground">Quel est votre objectif ?</h2>
         <p className="text-muted-foreground">
           Nous adapterons votre plan alimentaire en conséquence
         </p>
@@ -85,11 +83,7 @@ export const StepGoal = ({ value, onChange }: StepGoalProps) => {
                     stroke="currentColor"
                     strokeWidth={3}
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M5 13l4 4L19 7"
-                    />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
               )}

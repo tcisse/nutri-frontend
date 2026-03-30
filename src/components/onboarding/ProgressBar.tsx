@@ -11,9 +11,7 @@ interface ProgressBarProps {
 
 export const ProgressBar = ({ currentStep, totalSteps }: ProgressBarProps) => {
   // Utiliser totalSteps si fourni, sinon le nombre d'étapes par défaut
-  const steps = totalSteps
-    ? ONBOARDING_STEPS.slice(0, totalSteps)
-    : ONBOARDING_STEPS;
+  const steps = totalSteps ? ONBOARDING_STEPS.slice(0, totalSteps) : ONBOARDING_STEPS;
   const progress = ((currentStep - 1) / (steps.length - 1)) * 100;
 
   return (
@@ -63,9 +61,7 @@ export const ProgressBar = ({ currentStep, totalSteps }: ProgressBarProps) => {
         <p className="text-xs text-muted-foreground uppercase tracking-wide">
           Étape {currentStep} sur {steps.length}
         </p>
-        <p className="text-sm font-medium text-foreground mt-1">
-          {steps[currentStep - 1]?.title}
-        </p>
+        <p className="text-sm font-medium text-foreground mt-1">{steps[currentStep - 1]?.title}</p>
       </div>
     </div>
   );

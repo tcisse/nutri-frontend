@@ -27,14 +27,10 @@ export const CalorieHeader = ({ calories, portions }: CalorieHeaderProps) => {
           <Flame className="w-7 h-7 text-primary-foreground" />
         </div>
         <div>
-          <p className="text-sm text-muted-foreground font-medium">
-            Objectif quotidien
-          </p>
+          <p className="text-sm text-muted-foreground font-medium">Objectif quotidien</p>
           <p className="text-4xl font-bold text-foreground">
             {calories.toLocaleString("fr-FR")}
-            <span className="text-lg font-medium text-muted-foreground ml-1">
-              Kcal
-            </span>
+            <span className="text-lg font-medium text-muted-foreground ml-1">Kcal</span>
           </p>
         </div>
       </div>
@@ -43,9 +39,7 @@ export const CalorieHeader = ({ calories, portions }: CalorieHeaderProps) => {
       <div className="border-t border-border/50 pt-4">
         <div className="flex items-center gap-2 mb-3">
           <Utensils className="w-4 h-4 text-muted-foreground" />
-          <p className="text-sm font-medium text-muted-foreground">
-            Répartition des portions
-          </p>
+          <p className="text-sm font-medium text-muted-foreground">Répartition des portions</p>
         </div>
         <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
           {portionItems.map((item) => (
@@ -56,9 +50,7 @@ export const CalorieHeader = ({ calories, portions }: CalorieHeaderProps) => {
               <span className="text-lg mb-1" role="img" aria-hidden="true">
                 {item.emoji}
               </span>
-              <span className="text-lg font-bold text-foreground">
-                {portions[item.key]}
-              </span>
+              <span className="text-lg font-bold text-foreground">{portions[item.key]}</span>
               <span className="text-[10px] text-muted-foreground text-center leading-tight">
                 {FOOD_GROUP_LABELS[item.key]}
               </span>

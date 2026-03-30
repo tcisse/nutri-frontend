@@ -43,13 +43,13 @@ export default function ProfilePage() {
   const userName = typeof window !== "undefined" ? sessionStorage.getItem("userName") : null;
 
   // Validate license code format
+  // Accepts internal format: NUTRI-XXXX-XXXX-XXXX
+  // Accepts Chariow format:  XXXX-XXXX-XXXX-XXXX (4 segments of 4 alphanumeric chars)
   const validateLicenseCode = (code: string): boolean => {
-    // Remove any spaces and convert to uppercase
     const cleanCode = code.replace(/\s/g, "").toUpperCase();
-
-    // Check format: NUTRI-XXXX-XXXX-XXXX
-    const regex = /^NUTRI-[A-Z2-9]{4}-[A-Z2-9]{4}-[A-Z2-9]{4}$/;
-    return regex.test(cleanCode);
+    const nutriFormat = /^NUTRI-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/;
+    const chariowFormat = /^[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/;
+    return nutriFormat.test(cleanCode) || chariowFormat.test(cleanCode);
   };
 
   useEffect(() => {
@@ -95,7 +95,8 @@ export default function ProfilePage() {
       await fetchLicense();
       setLicenseCode("");
     } catch (error: any) {
-      const errorMessage = error.response?.data?.error || error.message || "Erreur lors de l'activation";
+      const errorMessage =
+        error.response?.data?.error || error.message || "Erreur lors de l'activation";
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -104,35 +105,31 @@ export default function ProfilePage() {
 
   const handleLicenseCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value.toUpperCase().replace(/\s/g, "");
-
-    // Remove all non-alphanumeric characters except hyphens
     value = value.replace(/[^A-Z0-9-]/g, "");
 
-    // Auto-format: add hyphens after NUTRI and every 4 characters
-    if (value.startsWith("NUTRI")) {
-      const parts = [value.slice(0, 5)]; // "NUTRI"
-      const rest = value.slice(5).replace(/-/g, ""); // Remove existing hyphens
+    const raw = value.replace(/-/g, "");
 
-      // Limit rest to 12 characters (3 segments of 4)
-      const limitedRest = rest.slice(0, 12);
-
-      // Split rest into chunks of 4
-      for (let i = 0; i < limitedRest.length; i += 4) {
-        parts.push(limitedRest.slice(i, i + 4));
+    if (value.startsWith("NUTRI") || raw.startsWith("NUTRI")) {
+      // Format interne : NUTRI-XXXX-XXXX-XXXX
+      const parts = ["NUTRI"];
+      const rest = raw.startsWith("NUTRI") ? raw.slice(5) : raw;
+      const limited = rest.slice(0, 12);
+      for (let i = 0; i < limited.length; i += 4) {
+        parts.push(limited.slice(i, i + 4));
       }
-
-      value = parts.filter(p => p.length > 0).join("-");
+      value = parts.filter((p) => p.length > 0).join("-");
     } else {
-      // If doesn't start with NUTRI yet, limit to 5 characters
-      value = value.slice(0, 5);
+      // Format Chariow : XXXX-XXXX-XXXX-XXXX (16 chars max)
+      const limited = raw.slice(0, 16);
+      const parts: string[] = [];
+      for (let i = 0; i < limited.length; i += 4) {
+        parts.push(limited.slice(i, i + 4));
+      }
+      value = parts.join("-");
     }
 
     setLicenseCode(value);
-
-    // Clear error when user types
-    if (codeError) {
-      setCodeError(null);
-    }
+    if (codeError) setCodeError(null);
   };
 
   const formatDate = (dateString: string) => {
@@ -145,7 +142,9 @@ export default function ProfilePage() {
 
   const isExpiringSoon = (expiresAt: string | null) => {
     if (!expiresAt) return false;
-    const daysUntilExpiry = Math.ceil((new Date(expiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+    const daysUntilExpiry = Math.ceil(
+      (new Date(expiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+    );
     return daysUntilExpiry <= 7 && daysUntilExpiry > 0;
   };
 
@@ -156,15 +155,9 @@ export default function ProfilePage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Mon Profil</h1>
-            <p className="text-muted-foreground mt-1">
-              Bienvenue {userName || ""}
-            </p>
+            <p className="text-muted-foreground mt-1">Bienvenue {userName || ""}</p>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => router.push("/dashboard")}
-          >
+          <Button variant="ghost" size="sm" onClick={() => router.push("/dashboard")}>
             <ArrowLeft className="w-4 h-4 mr-2" />
             Retour au menu
           </Button>
@@ -191,9 +184,7 @@ export default function ProfilePage() {
                   ) : (
                     <XCircle className="w-5 h-5 text-red-500" />
                   )}
-                  <span className="font-medium">
-                    {license.isActive ? "Active" : "Inactive"}
-                  </span>
+                  <span className="font-medium">{license.isActive ? "Active" : "Inactive"}</span>
                 </div>
                 <span
                   className={`px-3 py-1 rounded-full text-xs font-semibold ${
@@ -278,9 +269,7 @@ export default function ProfilePage() {
             <div className="space-y-4">
               <div className="p-6 bg-secondary/10 border border-dashed border-border rounded-lg text-center">
                 <Key className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-                <p className="text-muted-foreground mb-1">
-                  Aucune licence active
-                </p>
+                <p className="text-muted-foreground mb-1">Aucune licence active</p>
                 <p className="text-sm text-muted-foreground">
                   Activez une licence pour générer des menus
                 </p>
@@ -295,16 +284,14 @@ export default function ProfilePage() {
                     <Input
                       id="licenseCode"
                       type="text"
-                      placeholder="NUTRI-XXXX-XXXX-XXXX"
+                      placeholder="XXXX-XXXX-XXXX-XXXX"
                       value={licenseCode}
                       onChange={handleLicenseCodeChange}
                       className={`uppercase font-mono ${codeError ? "border-destructive focus:ring-destructive" : ""}`}
-                      maxLength={20}
+                      maxLength={24}
                       disabled={loading}
                     />
-                    {codeError && (
-                      <p className="text-sm text-destructive mt-1">{codeError}</p>
-                    )}
+                    {codeError && <p className="text-sm text-destructive mt-1">{codeError}</p>}
                   </div>
                   <Button
                     onClick={handleActivate}
@@ -322,7 +309,7 @@ export default function ProfilePage() {
                   </Button>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Format requis : NUTRI-XXXX-XXXX-XXXX (chaque segment doit avoir 4 caractères)
+                  Entrez la clé reçue après votre achat (format : XXXX-XXXX-XXXX-XXXX)
                 </p>
               </div>
             </div>

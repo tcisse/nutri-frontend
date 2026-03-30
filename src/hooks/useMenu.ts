@@ -16,7 +16,7 @@ export const menuKeys = {
  */
 export const useMenu = (portions: PortionBudget | null, region: string) => {
   return useQuery<MenuResponse, Error>({
-    queryKey: menuKeys.detail(portions || {} as PortionBudget, region),
+    queryKey: menuKeys.detail(portions || ({} as PortionBudget), region),
     queryFn: () => generateMenu(portions!, region),
     enabled: !!portions && Object.keys(portions).length > 0,
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -31,11 +31,7 @@ export const useMenu = (portions: PortionBudget | null, region: string) => {
 export const useRegenerateMenu = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<
-    MenuResponse,
-    Error,
-    { portions: PortionBudget; region: string }
-  >({
+  return useMutation<MenuResponse, Error, { portions: PortionBudget; region: string }>({
     mutationFn: ({ portions, region }) => regenerateMenu(portions, region),
     onSuccess: (data, { portions, region }) => {
       // Mettre à jour le cache avec le nouveau menu

@@ -10,7 +10,11 @@ import {
   DaySelector,
   WeeklyCalorieHeader,
 } from "@/components/dashboard";
-import { useMonthlyMenu, useRegenerateMonthDay, useRegenerateMonthlyMenu } from "@/hooks/useWeeklyMenu";
+import {
+  useMonthlyMenu,
+  useRegenerateMonthDay,
+  useRegenerateMonthlyMenu,
+} from "@/hooks/useWeeklyMenu";
 import type { CalculateResponse, Country, MealType, DayOfMonth } from "@/types";
 import {
   Sparkles,
@@ -66,10 +70,10 @@ const loadInitialData = (): {
 
 export default function DashboardPage() {
   const router = useRouter();
-  
+
   // Charger les données initiales de manière synchrone
   const initialData = useMemo(() => loadInitialData(), []);
-  
+
   const [planData] = useState<CalculateResponse | null>(initialData.planData);
   const [country] = useState<Country>(initialData.country);
   const [selectedDay, setSelectedDay] = useState<DayOfMonth>(1);
@@ -104,7 +108,6 @@ export default function DashboardPage() {
   const regenerateMonthMutation = useRegenerateMonthlyMenu();
 
   const currentDayMeals = monthlyMenuData?.monthlyMenu[selectedDay] || [];
-
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleSwapFood = async (mealType: MealType, foodId: string) => {
@@ -201,8 +204,8 @@ export default function DashboardPage() {
   }, [router]);
 
   // Check if error is a license error
-  const isLicenseError = error?.message?.includes("licence") ||
-    error?.message?.includes("Aucune licence active");
+  const isLicenseError =
+    error?.message?.includes("licence") || error?.message?.includes("Aucune licence active");
 
   // Show loading while checking sessionStorage
   if (!isReady || !planData) {
@@ -213,8 +216,7 @@ export default function DashboardPage() {
     );
   }
 
-  const isRegenerating =
-    regenerateDayMutation.isPending || regenerateMonthMutation.isPending;
+  const isRegenerating = regenerateDayMutation.isPending || regenerateMonthMutation.isPending;
 
   return (
     <div className="min-h-screen bg-background">
@@ -235,21 +237,11 @@ export default function DashboardPage() {
           </div>
 
           <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleProfile}
-              aria-label="Mon profil"
-            >
+            <Button variant="ghost" size="sm" onClick={handleProfile} aria-label="Mon profil">
               <User className="w-4 h-4 sm:mr-1" />
               <span className="hidden sm:inline">Profil</span>
             </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleBack}
-              aria-label="Modifier mon profil"
-            >
+            <Button variant="ghost" size="sm" onClick={handleBack} aria-label="Modifier mon profil">
               <ArrowLeft className="w-4 h-4 mr-1" />
               <span className="hidden sm:inline">Modifier</span>
             </Button>
@@ -349,9 +341,7 @@ export default function DashboardPage() {
                   <div className="w-16 h-16 rounded-full bg-yellow-100 dark:bg-yellow-900/20 flex items-center justify-center mx-auto">
                     <Key className="w-8 h-8 text-yellow-600 dark:text-yellow-400" />
                   </div>
-                  <h3 className="text-xl font-semibold text-foreground">
-                    Licence requise
-                  </h3>
+                  <h3 className="text-xl font-semibold text-foreground">Licence requise</h3>
                   <p className="text-muted-foreground">
                     Vous devez activer une licence pour générer vos menus personnalisés
                   </p>
@@ -398,9 +388,7 @@ export default function DashboardPage() {
           ) : (
             !isError && (
               <div className="text-center py-8">
-                <p className="text-muted-foreground mb-4">
-                  Aucun menu généré pour ce jour.
-                </p>
+                <p className="text-muted-foreground mb-4">Aucun menu généré pour ce jour.</p>
                 <Button onClick={handleRegenerateMonth} disabled={isRegenerating}>
                   {isRegenerating ? (
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -418,8 +406,8 @@ export default function DashboardPage() {
         {currentDayMeals.length > 0 && (
           <section className="text-center py-6 opacity-0 animate-fade-up stagger-5">
             <p className="text-sm text-muted-foreground">
-              💡 Utilisez les onglets pour naviguer entre les jours •
-              Cliquez sur &quot;Changer&quot; pour régénérer un repas
+              💡 Utilisez les onglets pour naviguer entre les jours • Cliquez sur
+              &quot;Changer&quot; pour régénérer un repas
             </p>
           </section>
         )}

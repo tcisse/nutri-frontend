@@ -39,7 +39,12 @@ const loadInitialData = (): {
           // Ignore
         }
       }
-      return { planData: parsed as CalculateResponse, country, userFullName, shouldRedirect: false };
+      return {
+        planData: parsed as CalculateResponse,
+        country,
+        userFullName,
+        shouldRedirect: false,
+      };
     } else {
       sessionStorage.removeItem("nutritionPlan");
       sessionStorage.removeItem("userProfile");
@@ -111,7 +116,8 @@ export default function ExportPage() {
           body * {
             visibility: hidden;
           }
-          #print-content, #print-content * {
+          #print-content,
+          #print-content * {
             visibility: visible;
           }
           #print-content {
@@ -143,12 +149,7 @@ export default function ExportPage() {
               </div>
             </div>
 
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleBack}
-              aria-label="Retour au dashboard"
-            >
+            <Button variant="ghost" size="sm" onClick={handleBack} aria-label="Retour au dashboard">
               <ArrowLeft className="w-4 h-4 mr-1" />
               Retour
             </Button>
@@ -169,7 +170,7 @@ export default function ExportPage() {
                 Cliquez sur le bouton ci-dessous pour imprimer ou sauvegarder en PDF
               </p>
             </div>
-            
+
             {isLoading ? (
               <Button size="lg" disabled className="h-14 px-8">
                 <Loader2 className="w-5 h-5 mr-2 animate-spin" />
@@ -178,7 +179,9 @@ export default function ExportPage() {
             ) : isError ? (
               <div className="space-y-4">
                 <p className="text-destructive">Erreur lors du chargement</p>
-                <Button variant="outline" onClick={handleBack}>Retour</Button>
+                <Button variant="outline" onClick={handleBack}>
+                  Retour
+                </Button>
               </div>
             ) : (
               <Button
@@ -190,9 +193,10 @@ export default function ExportPage() {
                 Imprimer / Sauvegarder en PDF
               </Button>
             )}
-            
+
             <p className="text-sm text-muted-foreground">
-              💡 Dans la fenêtre d&apos;impression, sélectionnez &quot;Enregistrer en PDF&quot; comme destination
+              💡 Dans la fenêtre d&apos;impression, sélectionnez &quot;Enregistrer en PDF&quot;
+              comme destination
             </p>
           </div>
         </div>
@@ -204,9 +208,7 @@ export default function ExportPage() {
             <div className="text-center mb-8 pb-6 border-b-2 border-primary">
               <h1 className="text-3xl font-bold text-primary mb-2">🥗 NutriPlan</h1>
               {userFullName && (
-                <p className="text-lg font-semibold text-foreground mb-1">
-                  {userFullName}
-                </p>
+                <p className="text-lg font-semibold text-foreground mb-1">{userFullName}</p>
               )}
               <p className="text-muted-foreground">
                 Votre plan alimentaire personnalisé pour le mois
@@ -239,52 +241,49 @@ export default function ExportPage() {
 
             {/* Menu du mois */}
             <div className="space-y-6">
-              {MONTH_DAYS.filter(
-                (day) => day <= (monthlyMenuData.summary.daysGenerated || 30)
-              ).map((day, dayIndex) => {
-                const meals = monthlyMenuData.monthlyMenu[day as DayOfMonth];
-                if (!meals) return null;
-                
-                return (
-                  <div 
-                    key={`day-${day}`} 
-                    className={`${dayIndex > 0 && dayIndex % 5 === 4 ? "print-break" : ""}`}
-                  >
-                    <h2 className="text-xl font-bold text-primary bg-green-50 px-4 py-2 rounded-lg mb-4">
-                      Jour {day}
-                    </h2>
-                    
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {meals.map((meal) => (
-                        <div
-                          key={meal.type}
-                          className="border rounded-xl p-4 bg-gray-50"
-                        >
-                          <h3 className="font-bold text-foreground mb-3 flex items-center gap-2">
-                            <span>{meal.icon}</span>
-                            {MEAL_LABELS[meal.type]}
-                          </h3>
-                          <ul className="space-y-2">
-                            {meal.foods.map((food, idx) => (
-                              <li
-                                key={idx}
-                                className="flex justify-between items-center text-sm border-b border-gray-200 pb-1"
-                              >
-                                <span>
-                                  <strong>{food.quantity}x</strong> {food.name}
-                                </span>
-                                <span className="text-muted-foreground text-xs">
-                                  {food.portion}
-                                </span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      ))}
+              {MONTH_DAYS.filter((day) => day <= (monthlyMenuData.summary.daysGenerated || 30)).map(
+                (day, dayIndex) => {
+                  const meals = monthlyMenuData.monthlyMenu[day as DayOfMonth];
+                  if (!meals) return null;
+
+                  return (
+                    <div
+                      key={`day-${day}`}
+                      className={`${dayIndex > 0 && dayIndex % 5 === 4 ? "print-break" : ""}`}
+                    >
+                      <h2 className="text-xl font-bold text-primary bg-green-50 px-4 py-2 rounded-lg mb-4">
+                        Jour {day}
+                      </h2>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {meals.map((meal) => (
+                          <div key={meal.type} className="border rounded-xl p-4 bg-gray-50">
+                            <h3 className="font-bold text-foreground mb-3 flex items-center gap-2">
+                              <span>{meal.icon}</span>
+                              {MEAL_LABELS[meal.type]}
+                            </h3>
+                            <ul className="space-y-2">
+                              {meal.foods.map((food, idx) => (
+                                <li
+                                  key={idx}
+                                  className="flex justify-between items-center text-sm border-b border-gray-200 pb-1"
+                                >
+                                  <span>
+                                    <strong>{food.quantity}x</strong> {food.name}
+                                  </span>
+                                  <span className="text-muted-foreground text-xs">
+                                    {food.portion}
+                                  </span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                }
+              )}
             </div>
 
             {/* Conseils */}

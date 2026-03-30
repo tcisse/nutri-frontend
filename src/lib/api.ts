@@ -71,8 +71,7 @@ api.interceptors.response.use(
       return Promise.reject(new Error(message));
     }
 
-    const message =
-      error.response?.data?.error || error.message || "Une erreur est survenue";
+    const message = error.response?.data?.error || error.message || "Une erreur est survenue";
     console.error("[API Error]", message);
     return Promise.reject(new Error(message));
   }
@@ -109,9 +108,7 @@ const daysOrder: DayOfWeek[] = [
 /**
  * Transforme la réponse backend /api/calculate vers le format frontend
  */
-const transformCalorieResponse = (
-  backendResponse: BackendCalorieResult
-): CalculateResponse => {
+const transformCalorieResponse = (backendResponse: BackendCalorieResult): CalculateResponse => {
   const { data } = backendResponse;
   return {
     calories: data.roundedCalories,
@@ -159,9 +156,7 @@ const transformDailyMenuToMeals = (dailyMenu: DailyMenuData, dayIndex: number): 
 /**
  * Transforme la réponse backend /api/generate-menu vers le format frontend
  */
-const transformMenuResponse = (
-  backendResponse: BackendMenuResponse
-): MenuResponse => {
+const transformMenuResponse = (backendResponse: BackendMenuResponse): MenuResponse => {
   const { data } = backendResponse;
   const { menu, summary, region } = data;
 
@@ -266,9 +261,7 @@ const transformMonthlyMenuResponse = (
  * Calculate calories and portion budget based on user profile
  * POST /api/calculate
  */
-export const calculateCalories = async (
-  profile: UserProfile
-): Promise<CalculateResponse> => {
+export const calculateCalories = async (profile: UserProfile): Promise<CalculateResponse> => {
   const payload: {
     age: number;
     weight: number;
@@ -430,7 +423,10 @@ export const createUserApi = async (data: {
   height: number;
   country: string;
 }): Promise<{ user: UserData; token: string }> => {
-  const response = await api.post<{ success: boolean; data: { user: UserData; token: string } }>("/users", data);
+  const response = await api.post<{ success: boolean; data: { user: UserData; token: string } }>(
+    "/users",
+    data
+  );
   return response.data.data;
 };
 
@@ -438,8 +434,50 @@ export const createUserApi = async (data: {
  * Login user
  * POST /api/users/login
  */
-export const loginUserApi = async (email: string, password: string): Promise<{ user: UserData & { sessions?: Array<{ id: string; month: number; weight: number; age: number; activityLevel: string; goal: string; rate: string | null; bmr: number; tdee: number; targetCalories: number; portionBudget: string; createdAt: string }> }; token: string }> => {
-  const response = await api.post<{ success: boolean; data: { user: UserData & { sessions?: Array<{ id: string; month: number; weight: number; age: number; activityLevel: string; goal: string; rate: string | null; bmr: number; tdee: number; targetCalories: number; portionBudget: string; createdAt: string }> }; token: string } }>("/users/login", { email, password });
+export const loginUserApi = async (
+  email: string,
+  password: string
+): Promise<{
+  user: UserData & {
+    sessions?: Array<{
+      id: string;
+      month: number;
+      weight: number;
+      age: number;
+      activityLevel: string;
+      goal: string;
+      rate: string | null;
+      bmr: number;
+      tdee: number;
+      targetCalories: number;
+      portionBudget: string;
+      createdAt: string;
+    }>;
+  };
+  token: string;
+}> => {
+  const response = await api.post<{
+    success: boolean;
+    data: {
+      user: UserData & {
+        sessions?: Array<{
+          id: string;
+          month: number;
+          weight: number;
+          age: number;
+          activityLevel: string;
+          goal: string;
+          rate: string | null;
+          bmr: number;
+          tdee: number;
+          targetCalories: number;
+          portionBudget: string;
+          createdAt: string;
+        }>;
+      };
+      token: string;
+    };
+  }>("/users/login", { email, password });
   return response.data.data;
 };
 
@@ -481,9 +519,10 @@ export const getUserSessions = async (userId: string): Promise<SessionData[]> =>
  */
 export const getSessionMenuApi = async (sessionId: string): Promise<MonthlyMenuResponse | null> => {
   try {
-    const response = await api.get<{ success: boolean; data: { id: string; sessionId: string; data: MonthlyMenuResponse; createdAt: string } }>(
-      `/users/sessions/${sessionId}/menu`
-    );
+    const response = await api.get<{
+      success: boolean;
+      data: { id: string; sessionId: string; data: MonthlyMenuResponse; createdAt: string };
+    }>(`/users/sessions/${sessionId}/menu`);
     return response.data.data.data;
   } catch {
     return null;

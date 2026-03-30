@@ -29,22 +29,16 @@ export const WeeklyCalorieHeader = ({
       {/* Day indicator */}
       <div className="flex items-center justify-center gap-2 mb-4">
         <Calendar className="w-4 h-4 text-primary" />
-        <span className="text-sm font-medium text-primary">
-          {selectedDayLabel}
-        </span>
+        <span className="text-sm font-medium text-primary">{selectedDayLabel}</span>
       </div>
 
       {/* Calorie display */}
       <div className="flex items-center justify-center gap-4 mb-6">
         <div>
-          <p className="text-sm text-muted-foreground font-medium">
-            Objectif quotidien
-          </p>
+          <p className="text-sm text-muted-foreground font-medium">Objectif quotidien</p>
           <p className="text-4xl font-bold text-foreground">
             {(calories ?? 0).toLocaleString("fr-FR")}
-            <span className="text-lg font-medium text-muted-foreground ml-1">
-              Kcal
-            </span>
+            <span className="text-lg font-medium text-muted-foreground ml-1">Kcal</span>
           </p>
         </div>
       </div>
@@ -53,9 +47,7 @@ export const WeeklyCalorieHeader = ({
       <div className="border-t border-border/50 pt-4">
         <div className="flex items-center gap-2 mb-3">
           <Utensils className="w-4 h-4 text-muted-foreground" />
-          <p className="text-sm font-medium text-muted-foreground">
-            Portions par jour
-          </p>
+          <p className="text-sm font-medium text-muted-foreground">Portions par jour</p>
         </div>
         <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
           {portionItems.map((item) => (
@@ -66,9 +58,7 @@ export const WeeklyCalorieHeader = ({
               <span className="text-lg mb-1" role="img" aria-hidden="true">
                 {item.emoji}
               </span>
-              <span className="text-lg font-bold text-foreground">
-                {portions?.[item.key] ?? 0}
-              </span>
+              <span className="text-lg font-bold text-foreground">{portions?.[item.key] ?? 0}</span>
               <span className="text-[10px] text-muted-foreground text-center leading-tight">
                 {FOOD_GROUP_LABELS[item.key]}
               </span>

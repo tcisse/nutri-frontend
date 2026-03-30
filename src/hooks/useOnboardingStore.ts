@@ -1,14 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import type {
-  Gender,
-  ActivityLevel,
-  Goal,
-  WeightChangeRate,
-  Country,
-  UserProfile,
-} from "@/types";
+import type { Gender, ActivityLevel, Goal, WeightChangeRate, Country, UserProfile } from "@/types";
 
 export interface OnboardingState {
   step: number;
@@ -80,12 +73,9 @@ export const useOnboardingStore = () => {
     []
   );
 
-  const setPhysicalInfo = useCallback(
-    (info: { age: number; weight: number; height: number }) => {
-      setState((prev) => ({ ...prev, ...info }));
-    },
-    []
-  );
+  const setPhysicalInfo = useCallback((info: { age: number; weight: number; height: number }) => {
+    setState((prev) => ({ ...prev, ...info }));
+  }, []);
 
   const setActivity = useCallback((activity: ActivityLevel) => {
     setState((prev) => ({ ...prev, activity }));
@@ -107,7 +97,7 @@ export const useOnboardingStore = () => {
     setState((prev) => ({
       ...prev,
       country,
-      ...(licenseCode !== undefined && { licenseCode })
+      ...(licenseCode !== undefined && { licenseCode }),
     }));
   }, []);
 

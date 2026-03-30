@@ -85,9 +85,7 @@ export default function NewSessionPage() {
       toast.success("Nouveau plan généré !");
       router.push("/dashboard");
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Une erreur est survenue"
-      );
+      toast.error(error instanceof Error ? error.message : "Une erreur est survenue");
     } finally {
       setIsLoading(false);
     }
@@ -101,7 +99,13 @@ export default function NewSessionPage() {
     );
   }
 
-  const activityOptions: ActivityLevel[] = ["sedentary", "light", "moderate", "active", "extra_active"];
+  const activityOptions: ActivityLevel[] = [
+    "sedentary",
+    "light",
+    "moderate",
+    "active",
+    "extra_active",
+  ];
   const goalOptions: Goal[] = ["lose", "maintain", "gain"];
   const rateOptions: WeightChangeRate[] = ["0.5", "1", "1.5", "2"];
 
@@ -121,9 +125,7 @@ export default function NewSessionPage() {
       <main className="flex-1 py-8 px-4">
         <div className="max-w-sm mx-auto space-y-6">
           <div className="text-center space-y-2">
-            <h2 className="text-2xl font-bold text-foreground">
-              Mettez à jour vos infos
-            </h2>
+            <h2 className="text-2xl font-bold text-foreground">Mettez à jour vos infos</h2>
             <p className="text-muted-foreground text-sm">
               Renseignez votre poids actuel pour générer votre nouveau plan
             </p>
@@ -145,7 +147,9 @@ export default function NewSessionPage() {
                 placeholder="70"
                 className="pr-12 h-12 text-lg bg-card border-2 border-border focus:border-primary"
               />
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">kg</span>
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
+                kg
+              </span>
             </div>
           </div>
 
@@ -165,7 +169,9 @@ export default function NewSessionPage() {
                 placeholder="25"
                 className="pr-12 h-12 text-lg bg-card border-2 border-border focus:border-primary"
               />
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">ans</span>
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
+                ans
+              </span>
             </div>
           </div>
 

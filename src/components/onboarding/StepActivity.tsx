@@ -91,9 +91,7 @@ export const StepActivity = ({ value, onChange }: StepActivityProps) => {
               <div
                 className={cn(
                   "w-6 h-6 rounded-full border-2 transition-all flex items-center justify-center",
-                  isSelected
-                    ? "border-primary bg-primary"
-                    : "border-muted-foreground/30"
+                  isSelected ? "border-primary bg-primary" : "border-muted-foreground/30"
                 )}
               >
                 {isSelected && (
@@ -104,11 +102,7 @@ export const StepActivity = ({ value, onChange }: StepActivityProps) => {
                     stroke="currentColor"
                     strokeWidth={3}
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M5 13l4 4L19 7"
-                    />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                   </svg>
                 )}
               </div>

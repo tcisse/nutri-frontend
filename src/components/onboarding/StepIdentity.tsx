@@ -76,12 +76,8 @@ export const StepIdentity = ({ values, onChange }: StepIdentityProps) => {
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <h2 className="text-2xl font-bold text-foreground">
-          Créez votre compte
-        </h2>
-        <p className="text-muted-foreground">
-          Vos informations de base pour commencer
-        </p>
+        <h2 className="text-2xl font-bold text-foreground">Créez votre compte</h2>
+        <p className="text-muted-foreground">Vos informations de base pour commencer</p>
       </div>
 
       <div className="space-y-4 max-w-sm mx-auto">
@@ -106,9 +102,7 @@ export const StepIdentity = ({ values, onChange }: StepIdentityProps) => {
             }`}
             aria-invalid={!!errors.fullName}
           />
-          {errors.fullName && (
-            <p className="text-sm text-destructive">{errors.fullName.message}</p>
-          )}
+          {errors.fullName && <p className="text-sm text-destructive">{errors.fullName.message}</p>}
         </div>
 
         {/* Email */}
@@ -132,9 +126,7 @@ export const StepIdentity = ({ values, onChange }: StepIdentityProps) => {
             }`}
             aria-invalid={!!errors.email}
           />
-          {errors.email && (
-            <p className="text-sm text-destructive">{errors.email.message}</p>
-          )}
+          {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
         </div>
 
         {/* Password */}
@@ -168,9 +160,7 @@ export const StepIdentity = ({ values, onChange }: StepIdentityProps) => {
               {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
             </button>
           </div>
-          {errors.password && (
-            <p className="text-sm text-destructive">{errors.password.message}</p>
-          )}
+          {errors.password && <p className="text-sm text-destructive">{errors.password.message}</p>}
         </div>
 
         {/* Gender Selection */}

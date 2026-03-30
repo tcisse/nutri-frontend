@@ -1,11 +1,6 @@
 export type Gender = "male" | "female";
 
-export type ActivityLevel =
-  | "sedentary"
-  | "light"
-  | "moderate"
-  | "active"
-  | "extra_active"; // Corrigé: était "very_active"
+export type ActivityLevel = "sedentary" | "light" | "moderate" | "active" | "extra_active"; // Corrigé: était "very_active"
 
 export type Goal = "lose" | "maintain" | "gain";
 
@@ -161,7 +156,14 @@ export interface GenerateMenuPayload {
 // Types pour le menu hebdomadaire
 // ============================================
 
-export type DayOfWeek = "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | "sunday";
+export type DayOfWeek =
+  | "monday"
+  | "tuesday"
+  | "wednesday"
+  | "thursday"
+  | "friday"
+  | "saturday"
+  | "sunday";
 
 export interface DailyMenuData {
   jour: string;
@@ -364,10 +366,10 @@ export const RATE_LABELS: Record<WeightChangeRate, string> = {
 };
 
 export const RATE_KCAL_PER_DAY: Record<WeightChangeRate, number> = {
-  "0.5": 500,  // -/+ 500 kcal/jour
-  "1": 1000,   // -/+ 1000 kcal/jour
+  "0.5": 500, // -/+ 500 kcal/jour
+  "1": 1000, // -/+ 1000 kcal/jour
   "1.5": 1500, // -/+ 1500 kcal/jour
-  "2": 2000,   // -/+ 2000 kcal/jour
+  "2": 2000, // -/+ 2000 kcal/jour
 };
 
 // Limites minimales de calories par genre (santé)

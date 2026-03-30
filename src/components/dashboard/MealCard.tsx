@@ -65,9 +65,7 @@ export const MealCard = ({ meal, onSwapFood, className }: MealCardProps) => {
 
             {/* Meal name */}
             <div>
-              <h3 className="text-lg font-bold text-foreground">
-                {MEAL_LABELS[meal.type]}
-              </h3>
+              <h3 className="text-lg font-bold text-foreground">{MEAL_LABELS[meal.type]}</h3>
               <p className="text-xs text-muted-foreground font-normal">
                 {totalItems} portion{totalItems > 1 ? "s" : ""}
               </p>

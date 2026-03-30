@@ -5,15 +5,32 @@ import { useRouter, useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { getAdminUserDetail, deleteAdminUser, type UserDetail } from "@/lib/adminApi";
-import { ArrowLeft, Trash2, Activity, User as UserIcon, ChevronDown, ChevronUp, FileText } from "lucide-react";
+import {
+  ArrowLeft,
+  Trash2,
+  Activity,
+  User as UserIcon,
+  ChevronDown,
+  ChevronUp,
+  FileText,
+} from "lucide-react";
 import type { MonthlyMenuResponse, DayOfMonth } from "@/types";
 import { MEAL_LABELS, FOOD_GROUP_LABELS, MONTH_DAYS } from "@/types";
 
 const COUNTRY_LABELS: Record<string, string> = {
-  general: "Autre", senegal: "Sénégal", mali: "Mali", benin: "Bénin",
-  togo: "Togo", ghana: "Ghana", cote_ivoire: "Côte d'Ivoire",
-  cameroun: "Cameroun", guinea: "Guinée", burkina: "Burkina Faso",
-  niger: "Niger", congo: "Congo", nigeria: "Nigeria",
+  general: "Autre",
+  senegal: "Sénégal",
+  mali: "Mali",
+  benin: "Bénin",
+  togo: "Togo",
+  ghana: "Ghana",
+  cote_ivoire: "Côte d'Ivoire",
+  cameroun: "Cameroun",
+  guinea: "Guinée",
+  burkina: "Burkina Faso",
+  niger: "Niger",
+  congo: "Congo",
+  nigeria: "Nigeria",
 };
 
 const GOAL_LABELS: Record<string, string> = {
@@ -63,11 +80,7 @@ export default function AdminUserDetailPage() {
   }
 
   if (!user) {
-    return (
-      <div className="p-6 text-center text-muted-foreground">
-        Utilisateur non trouve
-      </div>
-    );
+    return <div className="p-6 text-center text-muted-foreground">Utilisateur non trouve</div>;
   }
 
   return (
@@ -83,12 +96,7 @@ export default function AdminUserDetailPage() {
             {user.firstName} {user.lastName}
           </h1>
         </div>
-        <Button
-          variant="destructive"
-          size="sm"
-          onClick={handleDelete}
-          disabled={deleting}
-        >
+        <Button variant="destructive" size="sm" onClick={handleDelete} disabled={deleting}>
           <Trash2 className="w-4 h-4 mr-1" />
           Supprimer
         </Button>
@@ -176,9 +184,7 @@ export default function AdminUserDetailPage() {
       <Card className="p-5">
         <h3 className="font-semibold mb-4">Historique des sessions</h3>
         {user.sessions.length === 0 ? (
-          <p className="text-muted-foreground text-sm text-center py-4">
-            Aucune session
-          </p>
+          <p className="text-muted-foreground text-sm text-center py-4">Aucune session</p>
         ) : (
           <div className="space-y-3">
             {user.sessions
@@ -188,10 +194,7 @@ export default function AdminUserDetailPage() {
                 const menuData = session.menu?.data as MonthlyMenuResponse | undefined;
 
                 return (
-                  <div
-                    key={session.id}
-                    className="p-4 rounded-lg bg-secondary/50 space-y-2"
-                  >
+                  <div key={session.id} className="p-4 rounded-lg bg-secondary/50 space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="font-medium">Mois {session.month}</span>
                       <span className="text-xs text-muted-foreground">
@@ -205,11 +208,15 @@ export default function AdminUserDetailPage() {
                       </div>
                       <div>
                         <span className="text-muted-foreground">Calories: </span>
-                        <span className="font-medium">{Math.round(session.targetCalories)} kcal</span>
+                        <span className="font-medium">
+                          {Math.round(session.targetCalories)} kcal
+                        </span>
                       </div>
                       <div>
                         <span className="text-muted-foreground">Objectif: </span>
-                        <span className="font-medium">{GOAL_LABELS[session.goal] || session.goal}</span>
+                        <span className="font-medium">
+                          {GOAL_LABELS[session.goal] || session.goal}
+                        </span>
                       </div>
                       <div>
                         <span className="text-muted-foreground">Menu: </span>
@@ -241,7 +248,9 @@ export default function AdminUserDetailPage() {
                               </p>
                               <p>
                                 <span className="text-muted-foreground">Jours générés: </span>
-                                <span className="font-medium">{menuData.summary.daysGenerated}</span>
+                                <span className="font-medium">
+                                  {menuData.summary.daysGenerated}
+                                </span>
                               </p>
                             </div>
                             <div className="space-y-3">
@@ -250,7 +259,10 @@ export default function AdminUserDetailPage() {
                                 if (!dayMenu) return null;
 
                                 return (
-                                  <div key={day} className="rounded-md bg-background/50 p-3 space-y-2">
+                                  <div
+                                    key={day}
+                                    className="rounded-md bg-background/50 p-3 space-y-2"
+                                  >
                                     <h4 className="font-medium text-sm">Jour {day}</h4>
                                     {dayMenu.map((meal) => (
                                       <div key={meal.type} className="text-xs">

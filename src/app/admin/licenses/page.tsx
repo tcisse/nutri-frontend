@@ -21,22 +21,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  getAdminLicensesApi,
-  createLicenseApi,
-  deactivateLicenseApi,
-} from "@/lib/licenseApi";
+import { getAdminLicensesApi, createLicenseApi, deactivateLicenseApi } from "@/lib/licenseApi";
 import { toast } from "sonner";
-import {
-  Plus,
-  Filter,
-  Key,
-  Loader2,
-  CheckCircle,
-  XCircle,
-  Copy,
-  Ban,
-} from "lucide-react";
+import { Plus, Filter, Key, Loader2, CheckCircle, XCircle, Copy, Ban } from "lucide-react";
 
 interface License {
   id: string;
@@ -119,9 +106,7 @@ export default function AdminLicensesPage() {
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
-        (l) =>
-          l.code.toLowerCase().includes(query) ||
-          l.name.toLowerCase().includes(query)
+        (l) => l.code.toLowerCase().includes(query) || l.name.toLowerCase().includes(query)
       );
     }
 
@@ -207,9 +192,7 @@ export default function AdminLicensesPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Gestion des Licences</h1>
-            <p className="text-muted-foreground mt-1">
-              Créez et gérez les licences utilisateur
-            </p>
+            <p className="text-muted-foreground mt-1">Créez et gérez les licences utilisateur</p>
           </div>
           <Button onClick={() => setShowCreateDialog(true)} className="gap-2">
             <Plus className="w-4 h-4" />

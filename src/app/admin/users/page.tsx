@@ -9,10 +9,17 @@ import { getAdminUsers, type UserListItem, type UserListResponse } from "@/lib/a
 import { Search, ChevronLeft, ChevronRight, Eye } from "lucide-react";
 
 const COUNTRY_LABELS: Record<string, string> = {
-  general: "Autre", senegal: "Sénégal", mali: "Mali", benin: "Bénin",
-  togo: "Togo", ghana: "Ghana", cote_ivoire: "Côte d'Ivoire",
-  cameroun: "Cameroun", burkina: "Burkina Faso",
-  niger: "Niger", congo: "Congo",
+  general: "Autre",
+  senegal: "Sénégal",
+  mali: "Mali",
+  benin: "Bénin",
+  togo: "Togo",
+  ghana: "Ghana",
+  cote_ivoire: "Côte d'Ivoire",
+  cameroun: "Cameroun",
+  burkina: "Burkina Faso",
+  niger: "Niger",
+  congo: "Congo",
 };
 
 export default function AdminUsersPage() {
@@ -67,18 +74,16 @@ export default function AdminUsersPage() {
             className="pl-9"
           />
         </div>
-        <Button type="submit" variant="outline">Rechercher</Button>
+        <Button type="submit" variant="outline">
+          Rechercher
+        </Button>
       </form>
 
       {/* Table */}
       {loading ? (
-        <div className="text-center py-10 text-muted-foreground animate-pulse">
-          Chargement...
-        </div>
+        <div className="text-center py-10 text-muted-foreground animate-pulse">Chargement...</div>
       ) : !data || data.users.length === 0 ? (
-        <div className="text-center py-10 text-muted-foreground">
-          Aucun utilisateur trouve
-        </div>
+        <div className="text-center py-10 text-muted-foreground">Aucun utilisateur trouve</div>
       ) : (
         <Card className="overflow-hidden">
           <div className="overflow-x-auto">
@@ -88,8 +93,12 @@ export default function AdminUsersPage() {
                   <th className="text-left px-4 py-3 font-medium">Nom</th>
                   <th className="text-left px-4 py-3 font-medium">Role</th>
                   <th className="text-left px-4 py-3 font-medium hidden sm:table-cell">Pays</th>
-                  <th className="text-left px-4 py-3 font-medium hidden md:table-cell">Inscription</th>
-                  <th className="text-left px-4 py-3 font-medium hidden md:table-cell">Dernier mois</th>
+                  <th className="text-left px-4 py-3 font-medium hidden md:table-cell">
+                    Inscription
+                  </th>
+                  <th className="text-left px-4 py-3 font-medium hidden md:table-cell">
+                    Dernier mois
+                  </th>
                   <th className="text-right px-4 py-3 font-medium">Actions</th>
                 </tr>
               </thead>

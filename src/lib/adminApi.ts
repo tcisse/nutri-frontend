@@ -120,9 +120,7 @@ export const getAdminUsers = async (
 };
 
 export const getAdminUserDetail = async (id: string): Promise<UserDetail> => {
-  const response = await adminApi.get<{ success: boolean; data: UserDetail }>(
-    `/admin/users/${id}`
-  );
+  const response = await adminApi.get<{ success: boolean; data: UserDetail }>(`/admin/users/${id}`);
   return response.data.data;
 };
 
