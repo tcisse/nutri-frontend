@@ -53,6 +53,10 @@ export default function ProfilePage() {
   };
 
   useEffect(() => {
+    if (!userId) {
+      router.push("/login");
+      return;
+    }
     fetchLicense();
   }, []);
 
@@ -75,7 +79,11 @@ export default function ProfilePage() {
   };
 
   const handleActivate = async () => {
-    if (!userId || !licenseCode.trim()) {
+    if (!userId) {
+      router.push("/login");
+      return;
+    }
+    if (!licenseCode.trim()) {
       toast.error("Veuillez entrer un code de licence");
       return;
     }
