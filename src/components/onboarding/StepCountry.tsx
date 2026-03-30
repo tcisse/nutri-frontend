@@ -43,27 +43,27 @@ export const StepCountry = ({ value, licenseCode, onChange }: StepCountryProps) 
 
   const handleLicenseCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let newValue = e.target.value.toUpperCase().replace(/\s/g, "");
-
-    // Remove all non-alphanumeric characters except hyphens
     newValue = newValue.replace(/[^A-Z0-9-]/g, "");
 
-    // Auto-format: add hyphens after NUTRI and every 4 characters
-    if (newValue.startsWith("NUTRI")) {
-      const parts = [newValue.slice(0, 5)]; // "NUTRI"
-      const rest = newValue.slice(5).replace(/-/g, ""); // Remove existing hyphens
+    const raw = newValue.replace(/-/g, "");
 
-      // Limit rest to 12 characters (3 segments of 4)
-      const limitedRest = rest.slice(0, 12);
-
-      // Split rest into chunks of 4
-      for (let i = 0; i < limitedRest.length; i += 4) {
-        parts.push(limitedRest.slice(i, i + 4));
+    if (newValue.startsWith("NUTRI") || raw.startsWith("NUTRI")) {
+      // Format interne : NUTRI-XXXX-XXXX-XXXX
+      const parts = ["NUTRI"];
+      const rest = raw.startsWith("NUTRI") ? raw.slice(5) : raw;
+      const limited = rest.slice(0, 12);
+      for (let i = 0; i < limited.length; i += 4) {
+        parts.push(limited.slice(i, i + 4));
       }
-
       newValue = parts.filter((p) => p.length > 0).join("-");
     } else {
-      // If doesn't start with NUTRI yet, limit to 5 characters
-      newValue = newValue.slice(0, 5);
+      // Format Chariow : XXXX-XXXX-XXXX-XXXX
+      const limited = raw.slice(0, 16);
+      const parts: string[] = [];
+      for (let i = 0; i < limited.length; i += 4) {
+        parts.push(limited.slice(i, i + 4));
+      }
+      newValue = parts.join("-");
     }
 
     setCode(newValue);
@@ -158,15 +158,15 @@ export const StepCountry = ({ value, licenseCode, onChange }: StepCountryProps) 
         <Input
           id="licenseCode"
           type="text"
-          placeholder="NUTRI-XXXX-XXXX-XXXX"
+          placeholder="XXXX-XXXX-XXXX-XXXX"
           value={code}
           onChange={handleLicenseCodeChange}
           className="h-12 text-lg bg-card border-2 border-border focus:border-primary uppercase font-mono"
-          maxLength={20}
+          maxLength={24}
           required
         />
         <p className="text-xs text-muted-foreground">
-          Format requis : NUTRI-XXXX-XXXX-XXXX (chaque segment doit avoir 4 caractères)
+          Entrez la clé reçue après votre achat (format : XXXX-XXXX-XXXX-XXXX)
         </p>
       </div>
 
