@@ -54,7 +54,12 @@ export default function NewSessionPage() {
   const canSubmit = weight && age && activity && goal && (goal === "maintain" || rate);
 
   const handleSubmit = async () => {
-    if (!canSubmit || !userId || !userProfile) return;
+    if (!canSubmit) return;
+    if (!userId || !userProfile) {
+      toast.error("Session expirée, veuillez vous reconnecter");
+      router.push("/login");
+      return;
+    }
 
     setIsLoading(true);
     try {
