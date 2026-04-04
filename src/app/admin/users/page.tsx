@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { getAdminUsers, type UserListItem, type UserListResponse } from "@/lib/adminApi";
-import { Search, ChevronLeft, ChevronRight, Eye } from "lucide-react";
+import { getAdminUsers, deleteAdminUser, type UserListItem, type UserListResponse } from "@/lib/adminApi";
+import { toast } from "sonner";
+import { Search, ChevronLeft, ChevronRight, Eye, Trash2 } from "lucide-react";
 
 const COUNTRY_LABELS: Record<string, string> = {
   general: "Autre",
@@ -30,6 +31,8 @@ export default function AdminUsersPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState<UserListItem | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
@@ -51,6 +54,21 @@ export default function AdminUsersPage() {
     e.preventDefault();
     setPage(1);
     setSearch(searchInput);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      await deleteAdminUser(deleteTarget.id);
+      toast.success(`${deleteTarget.firstName} ${deleteTarget.lastName} supprimé`);
+      setDeleteTarget(null);
+      fetchUsers();
+    } catch {
+      toast.error("Erreur lors de la suppression");
+    } finally {
+      setDeleting(false);
+    }
   };
 
   return (
@@ -120,13 +138,23 @@ export default function AdminUsersPage() {
                       {user.lastSession ? `Mois ${user.lastSession.month}` : "-"}
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => router.push(`/admin/users/${user.id}`)}
-                      >
-                        <Eye className="w-4 h-4" />
-                      </Button>
+                      <div className="flex items-center justify-end gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => router.push(`/admin/users/${user.id}`)}
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                          onClick={() => setDeleteTarget(user)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -161,6 +189,47 @@ export default function AdminUsersPage() {
             </div>
           )}
         </Card>
+      )}
+      {/* Delete confirmation modal */}
+      {deleteTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-card border border-border rounded-2xl p-6 w-full max-w-sm mx-4 shadow-xl space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center shrink-0">
+                <Trash2 className="w-5 h-5 text-destructive" />
+              </div>
+              <div>
+                <h2 className="font-semibold text-foreground">Supprimer l&apos;utilisateur</h2>
+                <p className="text-sm text-muted-foreground">Cette action est irréversible</p>
+              </div>
+            </div>
+            <p className="text-sm text-foreground">
+              Voulez-vous supprimer{" "}
+              <span className="font-semibold">
+                {deleteTarget.firstName} {deleteTarget.lastName}
+              </span>{" "}
+              et toutes ses données ?
+            </p>
+            <div className="flex gap-2 justify-end pt-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setDeleteTarget(null)}
+                disabled={deleting}
+              >
+                Annuler
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleDeleteConfirm}
+                disabled={deleting}
+              >
+                {deleting ? "Suppression..." : "Supprimer"}
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

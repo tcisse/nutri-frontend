@@ -2,6 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { generateMonthlyMenu, getSessionMenuApi, saveMenuApi } from "@/lib/api";
+import { useMe } from "@/hooks/useMe";
 import type { MonthlyMenuResponse } from "@/types";
 
 // Query key factory
@@ -14,11 +15,12 @@ export const monthlyMenuKeys = {
  * Hook pour récupérer le menu mensuel depuis le plan PDF
  * - Essaie d'abord de charger le menu sauvegardé en BDD
  * - Sinon, génère le menu depuis le plan selon le pays de l'utilisateur
+ * @param days - Nombre de jours à générer
+ * @param sessionIdOverride - Forcer un sessionId spécifique (ex: export d'une vieille session)
  */
-export const useMonthlyMenu = (days = 28) => {
-  const sessionId = typeof window !== "undefined" ? sessionStorage.getItem("sessionId") : null;
-  const userProfile = typeof window !== "undefined" ? sessionStorage.getItem("userProfile") : null;
-  const country = userProfile ? (() => { try { return JSON.parse(userProfile).country; } catch { return undefined; } })() : undefined;
+export const useMonthlyMenu = (days = 28, sessionIdOverride?: string | null) => {
+  const { sessionId: currentSessionId, country } = useMe();
+  const sessionId = sessionIdOverride ?? currentSessionId;
 
   return useQuery<MonthlyMenuResponse, Error>({
     queryKey: monthlyMenuKeys.session(sessionId || "none"),
@@ -30,10 +32,10 @@ export const useMonthlyMenu = (days = 28) => {
       }
 
       // 2. Generate from PDF plan (with country-specific plan)
-      const generated = await generateMonthlyMenu(days, country);
+      const generated = await generateMonthlyMenu(days, country ?? undefined);
 
-      // 3. Save to DB
-      if (sessionId) {
+      // 3. Save to DB (only for current session, not for old session overrides)
+      if (sessionId && !sessionIdOverride) {
         try {
           await saveMenuApi(sessionId, generated);
         } catch {
@@ -43,7 +45,7 @@ export const useMonthlyMenu = (days = 28) => {
 
       return generated;
     },
-    enabled: true,
+    enabled: !!sessionId,
     staleTime: Infinity,
     retry: 2,
   });
@@ -54,16 +56,11 @@ export const useMonthlyMenu = (days = 28) => {
  */
 export const useRegenerateMonthlyMenu = () => {
   const queryClient = useQueryClient();
+  const { sessionId, country } = useMe();
 
   return useMutation<MonthlyMenuResponse, Error, { days?: number }>({
-    mutationFn: ({ days = 28 }) => {
-      const userProfile = typeof window !== "undefined" ? sessionStorage.getItem("userProfile") : null;
-      const country = userProfile ? (() => { try { return JSON.parse(userProfile).country; } catch { return undefined; } })() : undefined;
-      return generateMonthlyMenu(days, country);
-    },
+    mutationFn: ({ days = 28 }) => generateMonthlyMenu(days, country ?? undefined),
     onSuccess: (data) => {
-      const sessionId = typeof window !== "undefined" ? sessionStorage.getItem("sessionId") : null;
-
       queryClient.setQueryData(monthlyMenuKeys.session(sessionId || "none"), data);
 
       if (sessionId) {

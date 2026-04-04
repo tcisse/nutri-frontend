@@ -9,7 +9,6 @@ import { Label } from "@/components/ui/label";
 import { loginUserApi } from "@/lib/api";
 import { setUserToken } from "@/lib/cookies";
 import { Sparkles, Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
-import type { UserProfile, ActivityLevel, Goal, WeightChangeRate, Country } from "@/types";
 import Link from "next/link";
 
 function LoginForm() {
@@ -30,33 +29,11 @@ function LoginForm() {
       const { user, token } = await loginUserApi(email, password);
       setUserToken(token);
 
-      const fullName = `${user.firstName} ${user.lastName}`.trim();
-      sessionStorage.setItem("userId", user.id);
-      sessionStorage.setItem("userName", user.firstName);
-      sessionStorage.setItem("userFullName", fullName);
-
-      // If user has a latest session, go to dashboard
-      const latestSession = user.sessions?.[0];
-      if (latestSession) {
-        const profile: UserProfile = {
-          gender: user.gender as "male" | "female",
-          age: latestSession.age,
-          weight: latestSession.weight,
-          height: user.height,
-          activity: latestSession.activityLevel as ActivityLevel,
-          goal: latestSession.goal as Goal,
-          rate: latestSession.rate as WeightChangeRate | undefined,
-          country: user.country as Country,
-        };
-
-        sessionStorage.setItem("sessionId", latestSession.id);
-        sessionStorage.setItem("userProfile", JSON.stringify(profile));
-        sessionStorage.setItem("userMonth", String(latestSession.month));
-
+      const hasSession = !!user.sessions?.[0];
+      if (hasSession) {
         toast.success(`Bon retour, ${user.firstName} !`);
         router.push(redirectTo ?? "/dashboard");
       } else {
-        // No session yet — redirect to new session flow
         toast.success(`Bienvenue, ${user.firstName} !`);
         router.push(redirectTo ?? "/new-session");
       }

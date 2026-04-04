@@ -1,21 +1,11 @@
 "use client";
 
-import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Sparkles, ArrowRight, Salad, Heart, Target } from "lucide-react";
 
 export default function HomePage() {
   const router = useRouter();
-
-  // Check if user already has a plan
-  useEffect(() => {
-    const plan = sessionStorage.getItem("nutritionPlan");
-    if (plan) {
-      // User has a plan, could redirect to dashboard
-      // For now, let them choose
-    }
-  }, []);
 
   const handleStart = () => {
     router.push("/onboarding");

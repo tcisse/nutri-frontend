@@ -84,7 +84,10 @@ const mealIcons: Record<MealType, string> = {
  * Transforme un menu journalier backend en array de Meal frontend
  */
 const transformDailyMenuToMeals = (dailyMenu: DailyMenuData, dayIndex: number): Meal[] => {
-  const mealMapping: { key: keyof Omit<DailyMenuData, "jour" | "semaine" | "jourSemaine">; type: MealType }[] = [
+  const mealMapping: {
+    key: keyof Omit<DailyMenuData, "jour" | "semaine" | "jourSemaine">;
+    type: MealType;
+  }[] = [
     { key: "petit_dejeuner", type: "breakfast" },
     { key: "collation", type: "snack" },
     { key: "dejeuner", type: "lunch" },
@@ -144,8 +147,14 @@ const transformMonthlyMenuResponse = (
  * Generate a monthly meal plan from the PDF plan
  * POST /api/generate-monthly-menu
  */
-export const generateMonthlyMenu = async (days = 28, country?: string): Promise<MonthlyMenuResponse> => {
-  const response = await api.post<BackendMonthlyMenuResponse>("/generate-monthly-menu", { days, country });
+export const generateMonthlyMenu = async (
+  days = 28,
+  country?: string
+): Promise<MonthlyMenuResponse> => {
+  const response = await api.post<BackendMonthlyMenuResponse>("/generate-monthly-menu", {
+    days,
+    country,
+  });
   return transformMonthlyMenuResponse(response.data);
 };
 
@@ -256,10 +265,24 @@ export const saveMenuApi = async (sessionId: string, menuData: unknown) => {
  * POST /api/users/:userId/license/activate
  */
 export const activateLicenseApi = async (userId: string, code: string) => {
-  const response = await api.post<{ success: boolean; data: { licenseActivation: { expiresAt: string | null; menusRemaining: number | null } } }>(
-    `/users/${userId}/license/activate`,
-    { code }
-  );
+  const response = await api.post<{
+    success: boolean;
+    data: { licenseActivation: { expiresAt: string | null; menusRemaining: number | null } };
+  }>(`/users/${userId}/license/activate`, { code });
+  return response.data.data;
+};
+
+/**
+ * Get current authenticated user from JWT
+ * GET /api/users/me
+ */
+export const getMeApi = async (): Promise<{
+  user: UserData & { sessions?: SessionData[] };
+}> => {
+  const response = await api.get<{
+    success: boolean;
+    data: { user: UserData & { sessions?: SessionData[] } };
+  }>("/users/me");
   return response.data.data;
 };
 

@@ -41,6 +41,8 @@ export interface AdminStats {
   totalMenus: number;
   usersByCountry: { country: string; count: number }[];
   usersByGoal: { goal: string; count: number }[];
+  usersOverTime: { date: string; count: number }[];
+  menusOverTime: { date: string; count: number }[];
 }
 
 export interface UserListItem {

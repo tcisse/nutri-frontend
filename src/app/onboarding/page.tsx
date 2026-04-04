@@ -81,21 +81,13 @@ export default function OnboardingPage() {
       }
 
       // Create session (no calorie calculation needed)
-      const session = await createSessionApi(newUser.id, {
+      await createSessionApi(newUser.id, {
         weight: state.weight!,
         age: state.age!,
         activityLevel: state.activity!,
         goal: state.goal!,
         rate: state.goal !== "maintain" ? state.rate! : undefined,
       });
-
-      // Store in sessionStorage for dashboard
-      sessionStorage.setItem("userId", newUser.id);
-      sessionStorage.setItem("sessionId", session.id);
-      sessionStorage.setItem("userProfile", JSON.stringify(profile));
-      sessionStorage.setItem("userName", firstName);
-      sessionStorage.setItem("userFullName", state.fullName!.trim());
-      sessionStorage.setItem("userMonth", String(session.month));
 
       toast.success("Votre compte est créé, bienvenue !");
       router.push("/dashboard");

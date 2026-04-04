@@ -5,31 +5,23 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { getUserSessions } from "@/lib/api";
+import { useMe } from "@/hooks/useMe";
 import type { SessionData } from "@/types";
 import { ArrowLeft, TrendingDown, TrendingUp, Minus, Activity, FileText } from "lucide-react";
 
 export default function ProgressPage() {
   const router = useRouter();
+  const { userId, userName, isLoading: isMeLoading, isAuthenticated } = useMe();
   const [sessions, setSessions] = useState<SessionData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [userName, setUserName] = useState("");
 
   useEffect(() => {
-    // Restore original sessionId if viewing an old session's menu
-    const previousSessionId = sessionStorage.getItem("previousSessionId");
-    if (previousSessionId) {
-      sessionStorage.setItem("sessionId", previousSessionId);
-      sessionStorage.removeItem("previousSessionId");
-    }
-
-    const userId = sessionStorage.getItem("userId");
-    const name = sessionStorage.getItem("userName");
-    if (name) setUserName(name);
-
-    if (!userId) {
+    if (isMeLoading) return;
+    if (!isAuthenticated) {
       router.push("/login");
       return;
     }
+    if (!userId) return;
 
     getUserSessions(userId)
       .then((data) => {
@@ -39,7 +31,7 @@ export default function ProgressPage() {
         setSessions([]);
       })
       .finally(() => setLoading(false));
-  }, [router]);
+  }, [userId, isMeLoading, isAuthenticated, router]);
 
   const getWeightDiff = () => {
     if (sessions.length < 2) return null;
@@ -57,13 +49,10 @@ export default function ProgressPage() {
   };
 
   const handleViewMenu = (session: SessionData) => {
-    const currentSessionId = sessionStorage.getItem("sessionId");
-    sessionStorage.setItem("previousSessionId", currentSessionId || "");
-    sessionStorage.setItem("sessionId", session.id);
-    router.push("/dashboard/export");
+    router.push(`/dashboard/export?sessionId=${session.id}`);
   };
 
-  if (loading) {
+  if (isMeLoading || loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-pulse text-muted-foreground">Chargement...</div>
