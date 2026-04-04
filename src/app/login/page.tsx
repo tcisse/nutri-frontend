@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { loginUserApi, calculateCalories } from "@/lib/api";
+import { loginUserApi } from "@/lib/api";
 import { setUserToken } from "@/lib/cookies";
 import { Sparkles, Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
 import type { UserProfile, ActivityLevel, Goal, WeightChangeRate, Country } from "@/types";
@@ -14,6 +14,8 @@ import Link from "next/link";
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get("redirect") || null;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -33,7 +35,7 @@ export default function LoginPage() {
       sessionStorage.setItem("userName", user.firstName);
       sessionStorage.setItem("userFullName", fullName);
 
-      // If user has a latest session, load their plan
+      // If user has a latest session, go to dashboard
       const latestSession = user.sessions?.[0];
       if (latestSession) {
         const profile: UserProfile = {
@@ -47,19 +49,16 @@ export default function LoginPage() {
           country: user.country as Country,
         };
 
-        const result = await calculateCalories(profile);
-
         sessionStorage.setItem("sessionId", latestSession.id);
         sessionStorage.setItem("userProfile", JSON.stringify(profile));
-        sessionStorage.setItem("nutritionPlan", JSON.stringify(result));
         sessionStorage.setItem("userMonth", String(latestSession.month));
 
         toast.success(`Bon retour, ${user.firstName} !`);
-        router.push("/dashboard");
+        router.push(redirectTo ?? "/dashboard");
       } else {
         // No session yet — redirect to new session flow
         toast.success(`Bienvenue, ${user.firstName} !`);
-        router.push("/new-session");
+        router.push(redirectTo ?? "/new-session");
       }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Email ou mot de passe incorrect");

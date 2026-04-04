@@ -6,8 +6,8 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { createSessionApi, calculateCalories } from "@/lib/api";
-import type { ActivityLevel, Goal, WeightChangeRate, UserProfile, Country } from "@/types";
+import { createSessionApi } from "@/lib/api";
+import type { ActivityLevel, Goal, WeightChangeRate, UserProfile } from "@/types";
 import { ACTIVITY_LABELS, GOAL_LABELS, RATE_LABELS } from "@/types";
 import { Sparkles, Loader2, Weight, Calendar, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -18,7 +18,6 @@ export default function NewSessionPage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
-  // Form state
   const [weight, setWeight] = useState<number | "">("");
   const [age, setAge] = useState<number | "">("");
   const [activity, setActivity] = useState<ActivityLevel | null>(null);
@@ -80,14 +79,11 @@ export default function NewSessionPage() {
         rate: goal !== "maintain" ? rate! : undefined,
       };
 
-      const result = await calculateCalories(profile);
-
       sessionStorage.setItem("sessionId", session.id);
       sessionStorage.setItem("userProfile", JSON.stringify(profile));
-      sessionStorage.setItem("nutritionPlan", JSON.stringify(result));
       sessionStorage.setItem("userMonth", String(session.month));
 
-      toast.success("Nouveau plan généré !");
+      toast.success("Nouveau plan du mois démarré !");
       router.push("/dashboard");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Une erreur est survenue");
@@ -132,7 +128,7 @@ export default function NewSessionPage() {
           <div className="text-center space-y-2">
             <h2 className="text-2xl font-bold text-foreground">Mettez à jour vos infos</h2>
             <p className="text-muted-foreground text-sm">
-              Renseignez votre poids actuel pour générer votre nouveau plan
+              Renseignez vos données pour démarrer votre nouveau plan mensuel
             </p>
           </div>
 
@@ -261,11 +257,11 @@ export default function NewSessionPage() {
             {isLoading ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Calcul en cours...
+                Démarrage...
               </>
             ) : (
               <>
-                Générer mon plan
+                Démarrer le nouveau mois
                 <ArrowRight className="w-4 h-4 ml-2" />
               </>
             )}

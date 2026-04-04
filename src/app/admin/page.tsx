@@ -11,14 +11,13 @@ const COUNTRY_LABELS: Record<string, string> = {
   mali: "Mali",
   benin: "Bénin",
   togo: "Togo",
-  ghana: "Ghana",
   cote_ivoire: "Côte d'Ivoire",
   cameroun: "Cameroun",
   guinea: "Guinée",
   burkina: "Burkina Faso",
   niger: "Niger",
   congo: "Congo",
-  nigeria: "Nigeria",
+  gabon: "Gabon",
 };
 
 const GOAL_LABELS: Record<string, string> = {

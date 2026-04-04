@@ -15,7 +15,7 @@ import {
   FileText,
 } from "lucide-react";
 import type { MonthlyMenuResponse, DayOfMonth } from "@/types";
-import { MEAL_LABELS, FOOD_GROUP_LABELS, MONTH_DAYS } from "@/types";
+import { MEAL_LABELS, MONTH_DAYS } from "@/types";
 
 const COUNTRY_LABELS: Record<string, string> = {
   general: "Autre",
@@ -23,14 +23,13 @@ const COUNTRY_LABELS: Record<string, string> = {
   mali: "Mali",
   benin: "Bénin",
   togo: "Togo",
-  ghana: "Ghana",
   cote_ivoire: "Côte d'Ivoire",
   cameroun: "Cameroun",
   guinea: "Guinée",
   burkina: "Burkina Faso",
   niger: "Niger",
   congo: "Congo",
-  nigeria: "Nigeria",
+  gabon: "Gabon",
 };
 
 const GOAL_LABELS: Record<string, string> = {
@@ -207,10 +206,8 @@ export default function AdminUserDetailPage() {
                         <span className="font-medium">{session.weight} kg</span>
                       </div>
                       <div>
-                        <span className="text-muted-foreground">Calories: </span>
-                        <span className="font-medium">
-                          {Math.round(session.targetCalories)} kcal
-                        </span>
+                        <span className="text-muted-foreground">Poids: </span>
+                        <span className="font-medium">{session.weight} kg</span>
                       </div>
                       <div>
                         <span className="text-muted-foreground">Objectif: </span>
@@ -243,10 +240,6 @@ export default function AdminUserDetailPage() {
                           <div className="mt-3 space-y-4 max-h-[500px] overflow-y-auto">
                             <div className="text-xs space-y-1 pb-2 border-b border-border/50">
                               <p>
-                                <span className="text-muted-foreground">Région: </span>
-                                <span className="font-medium">{menuData.region}</span>
-                              </p>
-                              <p>
                                 <span className="text-muted-foreground">Jours générés: </span>
                                 <span className="font-medium">
                                   {menuData.summary.daysGenerated}
@@ -272,7 +265,7 @@ export default function AdminUserDetailPage() {
                                         <ul className="ml-4 mt-1 space-y-0.5">
                                           {meal.foods.map((food) => (
                                             <li key={food.id} className="text-xs">
-                                              {food.name} - {food.quantity} {food.portion}
+                                              {food.name}
                                             </li>
                                           ))}
                                         </ul>

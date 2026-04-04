@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { getUserSessions } from "@/lib/api";
-import type { SessionData, PortionBudget, Country } from "@/types";
+import type { SessionData } from "@/types";
 import { ArrowLeft, TrendingDown, TrendingUp, Minus, Activity, FileText } from "lucide-react";
 
 export default function ProgressPage() {
@@ -27,7 +27,7 @@ export default function ProgressPage() {
     if (name) setUserName(name);
 
     if (!userId) {
-      router.push("/onboarding");
+      router.push("/login");
       return;
     }
 
@@ -57,39 +57,9 @@ export default function ProgressPage() {
   };
 
   const handleViewMenu = (session: SessionData) => {
-    // Store session data for export page
-    const nutritionPlan = {
-      calories: session.targetCalories,
-      portions: session.portionBudget,
-      details: {
-        bmr: session.bmr,
-        tdee: session.tdee,
-        targetCalories: session.targetCalories,
-      },
-      descriptions: {
-        activity: "",
-        goal: "",
-      },
-    };
-
-    // Get country from userProfile
-    const storedProfile = sessionStorage.getItem("userProfile");
-    let country: Country = "general";
-    if (storedProfile) {
-      try {
-        const profile = JSON.parse(storedProfile);
-        country = profile.country || "general";
-      } catch {
-        // Ignore
-      }
-    }
-
-    // Temporarily set the sessionId to this session's ID
     const currentSessionId = sessionStorage.getItem("sessionId");
     sessionStorage.setItem("previousSessionId", currentSessionId || "");
     sessionStorage.setItem("sessionId", session.id);
-    sessionStorage.setItem("nutritionPlan", JSON.stringify(nutritionPlan));
-
     router.push("/dashboard/export");
   };
 
@@ -115,7 +85,6 @@ export default function ProgressPage() {
       </header>
 
       <main className="max-w-2xl mx-auto px-4 py-6 space-y-6">
-        {/* Summary cards */}
         {userName && (
           <div className="text-center">
             <h2 className="text-xl font-bold">{userName}</h2>
@@ -159,7 +128,6 @@ export default function ProgressPage() {
           </div>
         )}
 
-        {/* Weight chart (simple bar representation) */}
         {sessions.length > 0 && (
           <Card className="p-5">
             <h3 className="font-semibold mb-4 flex items-center gap-2">
@@ -195,7 +163,6 @@ export default function ProgressPage() {
           </Card>
         )}
 
-        {/* Session history */}
         <Card className="p-5">
           <h3 className="font-semibold mb-4">Historique des sessions</h3>
           {sessions.length === 0 ? (
@@ -223,7 +190,6 @@ export default function ProgressPage() {
                     <div className="text-right">
                       <p className="font-medium text-sm">{session.weight} kg</p>
                       <p className="text-xs text-muted-foreground">
-                        {Math.round(session.targetCalories)} kcal |{" "}
                         {goalLabels[session.goal] || session.goal}
                       </p>
                     </div>

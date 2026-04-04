@@ -13,14 +13,15 @@ import {
   StepCountry,
 } from "@/components/onboarding";
 import { useOnboardingStore } from "@/hooks/useOnboardingStore";
-import { useCalculate } from "@/hooks/useCalculate";
 import { createUserApi, createSessionApi } from "@/lib/api";
 import { activateLicenseApi } from "@/lib/licenseApi";
 import { setUserToken } from "@/lib/cookies";
 import { ArrowLeft, ArrowRight, Loader2, Sparkles } from "lucide-react";
+import { useState } from "react";
 
 export default function OnboardingPage() {
   const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const {
     state,
     nextStep,
@@ -36,8 +37,6 @@ export default function OnboardingPage() {
     getTotalSteps,
   } = useOnboardingStore();
 
-  const calculateMutation = useCalculate();
-
   const handleSubmit = async () => {
     const profile = getProfile();
     if (!profile) {
@@ -45,6 +44,7 @@ export default function OnboardingPage() {
       return;
     }
 
+    setIsSubmitting(true);
     try {
       // Parse fullName into firstName/lastName
       const nameParts = (state.fullName || "").trim().split(/\s+/);
@@ -74,13 +74,13 @@ export default function OnboardingPage() {
       try {
         await activateLicenseApi(newUser.id, state.licenseCode.trim());
         toast.success("Licence activée avec succès!");
-      } catch (error: any) {
-        // Blocking error - license is required
-        toast.error(error?.response?.data?.error || "Code de licence invalide ou déjà utilisé");
+      } catch (error: unknown) {
+        const err = error as { response?: { data?: { error?: string } } };
+        toast.error(err?.response?.data?.error || "Code de licence invalide ou déjà utilisé");
         return;
       }
 
-      // Create session
+      // Create session (no calorie calculation needed)
       const session = await createSessionApi(newUser.id, {
         weight: state.weight!,
         age: state.age!,
@@ -89,22 +89,20 @@ export default function OnboardingPage() {
         rate: state.goal !== "maintain" ? state.rate! : undefined,
       });
 
-      // Calculate for frontend display
-      const result = await calculateMutation.mutateAsync(profile);
-
       // Store in sessionStorage for dashboard
       sessionStorage.setItem("userId", newUser.id);
       sessionStorage.setItem("sessionId", session.id);
       sessionStorage.setItem("userProfile", JSON.stringify(profile));
-      sessionStorage.setItem("nutritionPlan", JSON.stringify(result));
       sessionStorage.setItem("userName", firstName);
       sessionStorage.setItem("userFullName", state.fullName!.trim());
       sessionStorage.setItem("userMonth", String(session.month));
 
-      toast.success("Votre plan a été calculé !");
+      toast.success("Votre compte est créé, bienvenue !");
       router.push("/dashboard");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Une erreur est survenue");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -172,7 +170,6 @@ export default function OnboardingPage() {
 
   const totalSteps = getTotalSteps(state.goal);
   const isLastStep = state.step === totalSteps;
-  const isLoading = calculateMutation.isPending;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -205,7 +202,7 @@ export default function OnboardingPage() {
             variant="outline"
             size="lg"
             onClick={prevStep}
-            disabled={state.step === 1 || isLoading}
+            disabled={state.step === 1 || isSubmitting}
             className="flex-1 h-12"
             aria-label="Retour"
           >
@@ -216,19 +213,19 @@ export default function OnboardingPage() {
           <Button
             size="lg"
             onClick={handleNext}
-            disabled={!canProceed() || isLoading}
+            disabled={!canProceed() || isSubmitting}
             className="flex-1 h-12"
-            aria-label={isLastStep ? "Calculer mon plan" : "Suivant"}
+            aria-label={isLastStep ? "Créer mon compte" : "Suivant"}
           >
-            {isLoading ? (
+            {isSubmitting ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Calcul...
+                Création...
               </>
             ) : isLastStep ? (
               <>
                 <Sparkles className="w-4 h-4 mr-2" />
-                Calculer
+                Créer mon compte
               </>
             ) : (
               <>
