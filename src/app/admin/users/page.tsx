@@ -14,12 +14,13 @@ const COUNTRY_LABELS: Record<string, string> = {
   mali: "Mali",
   benin: "Bénin",
   togo: "Togo",
-  ghana: "Ghana",
   cote_ivoire: "Côte d'Ivoire",
   cameroun: "Cameroun",
+  guinea: "Guinée",
   burkina: "Burkina Faso",
   niger: "Niger",
   congo: "Congo",
+  gabon: "Gabon",
 };
 
 export default function AdminUsersPage() {

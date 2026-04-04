@@ -2,7 +2,14 @@
 
 import { cn } from "@/lib/utils";
 import type { WeightChangeRate, Goal } from "@/types";
-import { RATE_LABELS, RATE_DESCRIPTIONS, RATE_KCAL_PER_DAY } from "@/types";
+import { RATE_LABELS, RATE_DESCRIPTIONS } from "@/types";
+
+const RATE_KCAL_PER_DAY: Record<string, number> = {
+  "0.5": 500,
+  "1": 1000,
+  "1.5": 1500,
+  "2": 2000,
+};
 import { Zap, Gauge, Rocket, Flame } from "lucide-react";
 
 interface StepRateProps {

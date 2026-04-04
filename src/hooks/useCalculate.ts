@@ -1,18 +1,15 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
-import { calculateCalories } from "@/lib/api";
-import type { UserProfile, CalculateResponse } from "@/types";
 
+/**
+ * Hook vide — le calcul calorique a été supprimé.
+ * Le plan alimentaire est désormais basé sur le PDF Togo (28 jours fixes).
+ * Conservé pour compatibilité avec le code existant.
+ */
 export const useCalculate = () => {
-  return useMutation<CalculateResponse, Error, UserProfile>({
-    mutationFn: calculateCalories,
-    onSuccess: (data, variables) => {
-      // Store the result in sessionStorage for the dashboard
-      if (typeof window !== "undefined") {
-        sessionStorage.setItem("nutritionPlan", JSON.stringify(data));
-        sessionStorage.setItem("userProfile", JSON.stringify(variables));
-      }
-    },
+  return useMutation<void, Error, void>({
+    mutationFn: async () => {},
+    onSuccess: () => {},
   });
 };

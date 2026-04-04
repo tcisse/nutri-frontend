@@ -85,10 +85,6 @@ export interface UserDetail {
     activityLevel: string;
     goal: string;
     rate: string | null;
-    bmr: number;
-    tdee: number;
-    targetCalories: number;
-    portionBudget: Record<string, number>;
     createdAt: string;
     menu: { id: string; data: unknown; createdAt: string } | null;
   }[];

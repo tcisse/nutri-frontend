@@ -19,14 +19,13 @@ const countryOptions: { value: Country; flag: string }[] = [
   { value: "mali", flag: "🇲🇱" },
   { value: "benin", flag: "🇧🇯" },
   { value: "togo", flag: "🇹🇬" },
-  { value: "ghana", flag: "🇬🇭" },
   { value: "cote_ivoire", flag: "🇨🇮" },
   { value: "cameroun", flag: "🇨🇲" },
   { value: "guinea", flag: "🇬🇳" },
   { value: "burkina", flag: "🇧🇫" },
   { value: "niger", flag: "🇳🇪" },
   { value: "congo", flag: "🇨🇬" },
-  { value: "nigeria", flag: "🇳🇬" },
+  { value: "gabon", flag: "🇬🇦" },
   { value: "general", flag: "🌍" },
 ];
 

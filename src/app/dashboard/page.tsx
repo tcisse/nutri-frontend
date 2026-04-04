@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -12,14 +12,13 @@ import {
 } from "@/components/dashboard";
 import {
   useMonthlyMenu,
-  useRegenerateMonthDay,
   useRegenerateMonthlyMenu,
 } from "@/hooks/useWeeklyMenu";
-import type { CalculateResponse, Country, MealType, DayOfMonth } from "@/types";
+import type { DayOfMonth } from "@/types";
+import { removeUserToken } from "@/lib/cookies";
 import {
   Sparkles,
   RefreshCw,
-  ArrowLeft,
   Loader2,
   Calendar,
   FileDown,
@@ -27,168 +26,56 @@ import {
   CalendarPlus,
   User,
   Key,
+  LogOut,
 } from "lucide-react";
-
-const loadInitialData = (): {
-  planData: CalculateResponse | null;
-  country: Country;
-  shouldRedirect: boolean;
-} => {
-  if (typeof window === "undefined") {
-    return { planData: null, country: "general", shouldRedirect: false };
-  }
-
-  const storedPlan = sessionStorage.getItem("nutritionPlan");
-  const storedProfile = sessionStorage.getItem("userProfile");
-
-  if (!storedPlan) {
-    return { planData: null, country: "general", shouldRedirect: true };
-  }
-
-  try {
-    const parsed = JSON.parse(storedPlan);
-    if (parsed.calories && parsed.portions) {
-      let country: Country = "general";
-      if (storedProfile) {
-        try {
-          const profile = JSON.parse(storedProfile);
-          country = profile.country || "general";
-        } catch {
-          // Ignore
-        }
-      }
-      return { planData: parsed as CalculateResponse, country, shouldRedirect: false };
-    } else {
-      sessionStorage.removeItem("nutritionPlan");
-      sessionStorage.removeItem("userProfile");
-      return { planData: null, country: "general", shouldRedirect: true };
-    }
-  } catch {
-    return { planData: null, country: "general", shouldRedirect: true };
-  }
-};
 
 export default function DashboardPage() {
   const router = useRouter();
-
-  // Charger les données initiales de manière synchrone
-  const initialData = useMemo(() => loadInitialData(), []);
-
-  const [planData] = useState<CalculateResponse | null>(initialData.planData);
-  const [country] = useState<Country>(initialData.country);
+  const [isReady, setIsReady] = useState(false);
   const [selectedDay, setSelectedDay] = useState<DayOfMonth>(1);
 
-  // Redirection si pas de données
   useEffect(() => {
-    if (initialData.shouldRedirect) {
-      router.push("/onboarding");
+    const sessionId = sessionStorage.getItem("sessionId");
+    if (!sessionId) {
+      router.push("/login");
+      return;
     }
-  }, [initialData.shouldRedirect, router]);
 
-  // Restore original sessionId if viewing an old session's menu
-  useEffect(() => {
+    // Restore original sessionId if viewing an old session's menu
     const previousSessionId = sessionStorage.getItem("previousSessionId");
     if (previousSessionId) {
       sessionStorage.setItem("sessionId", previousSessionId);
       sessionStorage.removeItem("previousSessionId");
     }
-  }, []);
 
-  const isReady = planData !== null;
+    setIsReady(true);
+  }, [router]);
 
-  // Fetch weekly menu from API
   const {
     data: monthlyMenuData,
     isLoading,
     isError,
     error,
-  } = useMonthlyMenu(isReady ? planData?.portions || null : null, country);
+  } = useMonthlyMenu();
 
-  const regenerateDayMutation = useRegenerateMonthDay();
   const regenerateMonthMutation = useRegenerateMonthlyMenu();
 
   const currentDayMeals = monthlyMenuData?.monthlyMenu[selectedDay] || [];
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleSwapFood = async (mealType: MealType, foodId: string) => {
-    if (!planData?.portions) return;
-
-    try {
-      await regenerateDayMutation.mutateAsync({
-        day: selectedDay,
-        portions: planData.portions,
-        region: country,
-      });
-      toast.success(`Jour ${selectedDay} régénéré !`);
-    } catch (error: any) {
-      const errorMessage = error?.message || "Impossible de régénérer le jour";
-      if (errorMessage.includes("licence") || errorMessage.includes("Aucune licence active")) {
-        toast.error("Licence requise pour générer des menus", {
-          description: "Activez une licence depuis votre profil",
-          action: {
-            label: "Activer",
-            onClick: () => router.push("/dashboard/profile"),
-          },
-        });
-      } else {
-        toast.error(errorMessage);
-      }
-    }
-  };
-
-  const handleRegenerateDay = async () => {
-    if (!planData?.portions) return;
-
-    try {
-      await regenerateDayMutation.mutateAsync({
-        day: selectedDay,
-        portions: planData.portions,
-        region: country,
-      });
-      toast.success(`Jour ${selectedDay} régénéré !`);
-    } catch (error: any) {
-      const errorMessage = error?.message || "Impossible de régénérer le jour";
-      if (errorMessage.includes("licence") || errorMessage.includes("Aucune licence active")) {
-        toast.error("Licence requise pour générer des menus", {
-          description: "Activez une licence depuis votre profil",
-          action: {
-            label: "Activer",
-            onClick: () => router.push("/dashboard/profile"),
-          },
-        });
-      } else {
-        toast.error(errorMessage);
-      }
-    }
-  };
-
   const handleRegenerateMonth = async () => {
-    if (!planData?.portions) return;
-
     try {
-      await regenerateMonthMutation.mutateAsync({
-        portions: planData.portions,
-        region: country,
-      });
+      await regenerateMonthMutation.mutateAsync({});
       toast.success("Menu du mois régénéré !");
-    } catch (error: any) {
-      const errorMessage = error?.message || "Impossible de régénérer le mois";
-      if (errorMessage.includes("licence") || errorMessage.includes("Aucune licence active")) {
-        toast.error("Licence requise pour générer des menus", {
-          description: "Activez une licence depuis votre profil",
-          action: {
-            label: "Activer",
-            onClick: () => router.push("/dashboard/profile"),
-          },
-        });
-      } else {
-        toast.error(errorMessage);
-      }
+    } catch (error: unknown) {
+      const err = error as Error;
+      toast.error(err?.message || "Impossible de régénérer le mois");
     }
   };
 
-  const handleBack = useCallback(() => {
-    router.push("/onboarding");
+  const handleLogout = useCallback(() => {
+    removeUserToken();
+    sessionStorage.clear();
+    router.push("/login");
   }, [router]);
 
   const handleExportPDF = useCallback(() => {
@@ -203,12 +90,10 @@ export default function DashboardPage() {
     router.push("/dashboard/profile");
   }, [router]);
 
-  // Check if error is a license error
   const isLicenseError =
     error?.message?.includes("licence") || error?.message?.includes("Aucune licence active");
 
-  // Show loading while checking sessionStorage
-  if (!isReady || !planData) {
+  if (!isReady) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -216,7 +101,7 @@ export default function DashboardPage() {
     );
   }
 
-  const isRegenerating = regenerateDayMutation.isPending || regenerateMonthMutation.isPending;
+  const isRegenerating = regenerateMonthMutation.isPending;
 
   return (
     <div className="min-h-screen bg-background">
@@ -241,52 +126,15 @@ export default function DashboardPage() {
               <User className="w-4 h-4 sm:mr-1" />
               <span className="hidden sm:inline">Profil</span>
             </Button>
-            <Button variant="ghost" size="sm" onClick={handleBack} aria-label="Modifier mon profil">
-              <ArrowLeft className="w-4 h-4 mr-1" />
-              <span className="hidden sm:inline">Modifier</span>
-            </Button>
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
-              onClick={() => router.push("/new-session")}
-              aria-label="Nouveau mois"
-              className="text-primary border-primary/30 hover:bg-primary/10"
+              onClick={handleLogout}
+              aria-label="Se déconnecter"
+              className="text-destructive hover:text-destructive hover:bg-destructive/10"
             >
-              <CalendarPlus className="w-4 h-4 sm:mr-1" />
-              <span className="hidden sm:inline">Nouveau mois</span>
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleProgress}
-              aria-label="Ma progression"
-              className="text-primary border-primary/30 hover:bg-primary/10"
-            >
-              <TrendingUp className="w-4 h-4 sm:mr-1" />
-              <span className="hidden sm:inline">Progression</span>
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleExportPDF}
-              aria-label="Exporter en PDF"
-              className="text-primary border-primary/30 hover:bg-primary/10"
-            >
-              <FileDown className="w-4 h-4 sm:mr-1" />
-              <span className="hidden sm:inline">PDF</span>
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRegenerateMonth}
-              disabled={isLoading || isRegenerating}
-              aria-label="Régénérer le mois"
-            >
-              {isRegenerating ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <RefreshCw className="w-4 h-4" />
-              )}
+              <LogOut className="w-4 h-4 sm:mr-1" />
+              <span className="hidden sm:inline">Déconnexion</span>
             </Button>
           </div>
         </div>
@@ -294,13 +142,57 @@ export default function DashboardPage() {
 
       {/* Main content */}
       <main className="max-w-4xl mx-auto px-4 py-6 space-y-6">
-        {/* Calorie header */}
+        {/* Program header */}
         <section className="opacity-0 animate-fade-up">
           <WeeklyCalorieHeader
-            calories={planData.calories}
-            portions={planData.portions}
-            selectedDayLabel={`Jour ${selectedDay}`}
+            selectedDay={selectedDay}
+            totalDays={monthlyMenuData?.summary.daysGenerated}
           />
+        </section>
+
+        {/* Actions */}
+        <section className="opacity-0 animate-fade-up stagger-1 flex flex-wrap gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => router.push("/new-session")}
+            className="text-primary border-primary/30 hover:bg-primary/10"
+          >
+            <CalendarPlus className="w-4 h-4 mr-2" />
+            Nouveau mois
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleProgress}
+            className="text-primary border-primary/30 hover:bg-primary/10"
+          >
+            <TrendingUp className="w-4 h-4 mr-2" />
+            Progression
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleExportPDF}
+            className="text-primary border-primary/30 hover:bg-primary/10"
+          >
+            <FileDown className="w-4 h-4 mr-2" />
+            PDF
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRegenerateMonth}
+            disabled={isLoading || isRegenerating}
+            className="text-primary border-primary/30 hover:bg-primary/10"
+          >
+            {isRegenerating ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <RefreshCw className="w-4 h-4 mr-2" />
+            )}
+            Régénérer le menu
+          </Button>
         </section>
 
         {/* Day selector */}
@@ -308,7 +200,7 @@ export default function DashboardPage() {
           <DaySelector
             selectedDay={selectedDay}
             onSelectDay={setSelectedDay}
-            days={monthlyMenuData?.summary.daysGenerated || 30}
+            days={monthlyMenuData?.summary.daysGenerated || 28}
           />
         </section>
 
@@ -318,20 +210,6 @@ export default function DashboardPage() {
             <h2 className="text-xl font-bold text-foreground opacity-0 animate-fade-up stagger-2">
               Jour {selectedDay}
             </h2>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleRegenerateDay}
-              disabled={isLoading || isRegenerating}
-              className="opacity-0 animate-fade-up stagger-2"
-            >
-              {regenerateDayMutation.isPending ? (
-                <Loader2 className="w-4 h-4 animate-spin mr-1" />
-              ) : (
-                <RefreshCw className="w-4 h-4 mr-1" />
-              )}
-              Régénérer ce jour
-            </Button>
           </div>
 
           {isError && (
@@ -349,9 +227,6 @@ export default function DashboardPage() {
                     <Button onClick={handleProfile} className="gap-2">
                       <Key className="w-4 h-4" />
                       Activer une licence
-                    </Button>
-                    <Button onClick={handleBack} variant="outline">
-                      Retour
                     </Button>
                   </div>
                 </div>
@@ -380,7 +255,6 @@ export default function DashboardPage() {
                 <MealCard
                   key={`${selectedDay}-${meal.type}`}
                   meal={meal}
-                  onSwapFood={handleSwapFood}
                   className={`opacity-0 animate-fade-up stagger-${Math.min(index + 3, 5)}`}
                 />
               ))}
@@ -406,8 +280,7 @@ export default function DashboardPage() {
         {currentDayMeals.length > 0 && (
           <section className="text-center py-6 opacity-0 animate-fade-up stagger-5">
             <p className="text-sm text-muted-foreground">
-              💡 Utilisez les onglets pour naviguer entre les jours • Cliquez sur
-              &quot;Changer&quot; pour régénérer un repas
+              💡 Utilisez les onglets pour naviguer entre les jours du programme
             </p>
           </section>
         )}
