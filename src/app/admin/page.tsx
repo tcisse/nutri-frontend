@@ -1,24 +1,23 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { Card } from "@/components/ui/card";
 import { getAdminStats, type AdminStats } from "@/lib/adminApi";
 import { Users, Activity, FileText, Globe } from "lucide-react";
 
-const COUNTRY_LABELS: Record<string, string> = {
-  general: "Autre",
-  senegal: "Sénégal",
-  mali: "Mali",
-  benin: "Bénin",
-  togo: "Togo",
-  cote_ivoire: "Côte d'Ivoire",
-  cameroun: "Cameroun",
-  guinea: "Guinée",
-  burkina: "Burkina Faso",
-  niger: "Niger",
-  congo: "Congo",
-  gabon: "Gabon",
-};
+const UsersChart = dynamic(
+  () => import("@/components/admin/AdminCharts").then((m) => m.UsersChart),
+  { ssr: false }
+);
+const MenusChart = dynamic(
+  () => import("@/components/admin/AdminCharts").then((m) => m.MenusChart),
+  { ssr: false }
+);
+const CountryChart = dynamic(
+  () => import("@/components/admin/AdminCharts").then((m) => m.CountryChart),
+  { ssr: false }
+);
 
 const GOAL_LABELS: Record<string, string> = {
   lose: "Perte de poids",
@@ -54,10 +53,10 @@ export default function AdminDashboardPage() {
   }
 
   return (
-    <div className="p-6 space-y-6 max-w-5xl mx-auto">
+    <div className="p-6 space-y-6 max-w-7xl mx-auto">
       <h1 className="text-2xl font-bold">Dashboard</h1>
 
-      {/* Stats cards */}
+      {/* KPI cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card className="p-5">
           <div className="flex items-center gap-3">
@@ -90,55 +89,67 @@ export default function AdminDashboardPage() {
             </div>
             <div>
               <p className="text-2xl font-bold">{stats.totalMenus}</p>
-              <p className="text-xs text-muted-foreground">Menus generees</p>
+              <p className="text-xs text-muted-foreground">Menus générés</p>
             </div>
           </div>
         </Card>
       </div>
 
-      {/* Distribution charts */}
+      {/* Evolution charts */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* By country */}
         <Card className="p-5">
-          <h3 className="font-semibold mb-4 flex items-center gap-2">
-            <Globe className="w-4 h-4 text-primary" />
-            Par pays
+          <h3 className="font-semibold mb-4 flex items-center gap-2 text-sm">
+            <Users className="w-4 h-4 text-blue-500" />
+            Nouveaux utilisateurs — 30 jours
           </h3>
-          <div className="space-y-2">
-            {stats.usersByCountry.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Aucune donnee</p>
-            ) : (
-              stats.usersByCountry
-                .sort((a, b) => b.count - a.count)
-                .map((item) => (
-                  <div key={item.country} className="flex items-center justify-between">
-                    <span className="text-sm">{COUNTRY_LABELS[item.country] || item.country}</span>
-                    <span className="text-sm font-medium">{item.count}</span>
-                  </div>
-                ))
-            )}
-          </div>
+          <UsersChart stats={stats} />
         </Card>
 
-        {/* By goal */}
         <Card className="p-5">
-          <h3 className="font-semibold mb-4 flex items-center gap-2">
+          <h3 className="font-semibold mb-4 flex items-center gap-2 text-sm">
+            <FileText className="w-4 h-4 text-purple-500" />
+            Menus générés — 30 jours
+          </h3>
+          <MenusChart stats={stats} />
+        </Card>
+      </div>
+
+      {/* Country + Goal */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Card className="p-5">
+          <h3 className="font-semibold mb-4 flex items-center gap-2 text-sm">
+            <Globe className="w-4 h-4 text-green-500" />
+            Utilisateurs par pays
+          </h3>
+          <CountryChart stats={stats} />
+        </Card>
+
+        <Card className="p-5">
+          <h3 className="font-semibold mb-4 flex items-center gap-2 text-sm">
             <Activity className="w-4 h-4 text-primary" />
             Par objectif
           </h3>
-          <div className="space-y-2">
-            {stats.usersByGoal.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Aucune donnee</p>
-            ) : (
-              stats.usersByGoal
-                .sort((a, b) => b.count - a.count)
-                .map((item) => (
-                  <div key={item.goal} className="flex items-center justify-between">
-                    <span className="text-sm">{GOAL_LABELS[item.goal] || item.goal}</span>
-                    <span className="text-sm font-medium">{item.count}</span>
+          <div className="space-y-3 pt-2">
+            {stats.usersByGoal
+              .sort((a, b) => b.count - a.count)
+              .map((item) => {
+                const max = Math.max(...stats.usersByGoal.map((g) => g.count));
+                const pct = max > 0 ? (item.count / max) * 100 : 0;
+                return (
+                  <div key={item.goal} className="space-y-1">
+                    <div className="flex items-center justify-between text-sm">
+                      <span>{GOAL_LABELS[item.goal] ?? item.goal}</span>
+                      <span className="font-medium">{item.count}</span>
+                    </div>
+                    <div className="w-full bg-secondary rounded-full h-2">
+                      <div
+                        className="h-2 rounded-full bg-primary transition-all"
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
                   </div>
-                ))
-            )}
+                );
+              })}
           </div>
         </Card>
       </div>
