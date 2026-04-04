@@ -1,40 +1,29 @@
 import Cookies from "js-cookie";
 
-// Cookie options
-const COOKIE_OPTIONS = {
-  expires: 30, // 30 days for user tokens
+const BASE_OPTIONS = {
+  expires: 30,
   secure: process.env.NODE_ENV === "production",
   sameSite: "lax" as const,
 };
 
-const ADMIN_COOKIE_OPTIONS = {
-  expires: 7, // 7 days for admin tokens
+const ADMIN_OPTIONS = {
+  expires: 7,
   secure: process.env.NODE_ENV === "production",
   sameSite: "lax" as const,
 };
 
-// User token management
-export const setUserToken = (token: string) => {
-  Cookies.set("userToken", token, COOKIE_OPTIONS);
-};
+// ── Auth tokens ──────────────────────────────────────────
 
-export const getUserToken = (): string | undefined => {
-  return Cookies.get("userToken");
-};
+export const setUserToken = (token: string) => Cookies.set("userToken", token, BASE_OPTIONS);
+export const getUserToken = () => Cookies.get("userToken");
+export const removeUserToken = () => Cookies.remove("userToken");
 
-export const removeUserToken = () => {
-  Cookies.remove("userToken");
-};
+export const setAdminToken = (token: string) => Cookies.set("adminToken", token, ADMIN_OPTIONS);
+export const getAdminToken = () => Cookies.get("adminToken");
+export const removeAdminToken = () => Cookies.remove("adminToken");
 
-// Admin token management
-export const setAdminToken = (token: string) => {
-  Cookies.set("adminToken", token, ADMIN_COOKIE_OPTIONS);
-};
+// ── Clear all user data ──────────────────────────────────
 
-export const getAdminToken = (): string | undefined => {
-  return Cookies.get("adminToken");
-};
-
-export const removeAdminToken = () => {
-  Cookies.remove("adminToken");
+export const clearUserSession = () => {
+  removeUserToken();
 };

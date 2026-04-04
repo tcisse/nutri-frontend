@@ -1,34 +1,28 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useCallback, useRef } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useMonthlyMenu } from "@/hooks/useWeeklyMenu";
+import { useMe } from "@/hooks/useMe";
 import type { DayOfMonth } from "@/types";
 import { MEAL_LABELS, MONTH_DAYS } from "@/types";
 import { Sparkles, ArrowLeft, Loader2, FileText, Printer } from "lucide-react";
 
-export default function ExportPage() {
+function ExportContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const printRef = useRef<HTMLDivElement>(null);
-  const [isReady, setIsReady] = useState(false);
-  const [userFullName, setUserFullName] = useState("");
 
-  useEffect(() => {
-    const sessionId = sessionStorage.getItem("sessionId");
-    if (!sessionId) {
-      router.push("/dashboard");
-      return;
-    }
-    setUserFullName(sessionStorage.getItem("userFullName") || "");
-    setIsReady(true);
-  }, [router]);
+  const { sessionId: currentSessionId, userFullName, isLoading: isMeLoading } = useMe();
+  const sessionIdParam = searchParams.get("sessionId");
+  const sessionId = sessionIdParam ?? currentSessionId;
 
   const {
     data: monthlyMenuData,
     isLoading,
     isError,
-  } = useMonthlyMenu();
+  } = useMonthlyMenu(28, sessionIdParam);
 
   const handleBack = useCallback(() => {
     router.push("/dashboard");
@@ -38,12 +32,17 @@ export default function ExportPage() {
     window.print();
   }, []);
 
-  if (!isReady) {
+  if (isMeLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
+  }
+
+  if (!sessionId) {
+    router.push("/dashboard");
+    return null;
   }
 
   return (
@@ -208,5 +207,17 @@ export default function ExportPage() {
         </footer>
       </div>
     </>
+  );
+}
+
+export default function ExportPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    }>
+      <ExportContent />
+    </Suspense>
   );
 }

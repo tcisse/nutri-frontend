@@ -7,16 +7,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createSessionApi } from "@/lib/api";
-import type { ActivityLevel, Goal, WeightChangeRate, UserProfile } from "@/types";
+import { useMe } from "@/hooks/useMe";
+import { useQueryClient } from "@tanstack/react-query";
+import type { ActivityLevel, Goal, WeightChangeRate } from "@/types";
 import { ACTIVITY_LABELS, GOAL_LABELS, RATE_LABELS } from "@/types";
 import { Sparkles, Loader2, Weight, Calendar, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function NewSessionPage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
+  const { userId, session, isLoading: isMeLoading, isAuthenticated } = useMe();
+
   const [isLoading, setIsLoading] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
   const [weight, setWeight] = useState<number | "">("");
   const [age, setAge] = useState<number | "">("");
@@ -24,37 +27,28 @@ export default function NewSessionPage() {
   const [goal, setGoal] = useState<Goal | null>(null);
   const [rate, setRate] = useState<WeightChangeRate | null>(null);
 
+  // Pre-fill form from latest session
   useEffect(() => {
-    const storedUserId = sessionStorage.getItem("userId");
-    const storedProfile = sessionStorage.getItem("userProfile");
+    if (session) {
+      setWeight(session.weight);
+      setAge(session.age);
+      setActivity(session.activityLevel as ActivityLevel);
+      setGoal(session.goal as Goal);
+      setRate(session.rate as WeightChangeRate | null);
+    }
+  }, [session]);
 
-    if (!storedUserId) {
+  useEffect(() => {
+    if (!isMeLoading && !isAuthenticated) {
       router.push("/login");
-      return;
     }
-
-    setUserId(storedUserId);
-
-    if (storedProfile) {
-      try {
-        const profile = JSON.parse(storedProfile) as UserProfile;
-        setUserProfile(profile);
-        setWeight(profile.weight);
-        setAge(profile.age);
-        setActivity(profile.activity);
-        setGoal(profile.goal);
-        setRate(profile.rate || null);
-      } catch {
-        // Ignore
-      }
-    }
-  }, [router]);
+  }, [isMeLoading, isAuthenticated, router]);
 
   const canSubmit = weight && age && activity && goal && (goal === "maintain" || rate);
 
   const handleSubmit = async () => {
     if (!canSubmit) return;
-    if (!userId || !userProfile) {
+    if (!userId) {
       toast.error("Session expirée, veuillez vous reconnecter");
       router.push("/login");
       return;
@@ -62,7 +56,7 @@ export default function NewSessionPage() {
 
     setIsLoading(true);
     try {
-      const session = await createSessionApi(userId, {
+      await createSessionApi(userId, {
         weight: Number(weight),
         age: Number(age),
         activityLevel: activity!,
@@ -70,18 +64,7 @@ export default function NewSessionPage() {
         rate: goal !== "maintain" ? rate! : undefined,
       });
 
-      const profile: UserProfile = {
-        ...userProfile,
-        weight: Number(weight),
-        age: Number(age),
-        activity: activity!,
-        goal: goal!,
-        rate: goal !== "maintain" ? rate! : undefined,
-      };
-
-      sessionStorage.setItem("sessionId", session.id);
-      sessionStorage.setItem("userProfile", JSON.stringify(profile));
-      sessionStorage.setItem("userMonth", String(session.month));
+      await queryClient.invalidateQueries({ queryKey: ["me"] });
 
       toast.success("Nouveau plan du mois démarré !");
       router.push("/dashboard");
@@ -92,7 +75,7 @@ export default function NewSessionPage() {
     }
   };
 
-  if (!userId) {
+  if (isMeLoading || !isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />

@@ -1,6 +1,7 @@
 "use client";
 
 import { Calendar, Utensils } from "lucide-react";
+import { useMe } from "@/hooks/useMe";
 
 const countryLabels: Record<string, string> = {
   togo: "Plan Alimentaire Togolais",
@@ -25,16 +26,8 @@ export const WeeklyCalorieHeader = ({ selectedDay, totalDays = 28 }: ProgramHead
   const dayNames = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
   const dayName = dayNames[dayInWeek - 1];
 
-  const country = (() => {
-    if (typeof window === "undefined") return "";
-    try {
-      const profile = sessionStorage.getItem("userProfile");
-      return profile ? JSON.parse(profile).country ?? "" : "";
-    } catch {
-      return "";
-    }
-  })();
-  const planLabel = countryLabels[country] ?? "Plan Alimentaire Africain";
+  const { country } = useMe();
+  const planLabel = countryLabels[country ?? ""] ?? "Plan Alimentaire Africain";
 
   return (
     <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-transparent rounded-3xl p-6 sm:p-8 border border-primary/10">

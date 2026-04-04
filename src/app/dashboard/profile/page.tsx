@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { getUserLicenseApi, activateLicenseApi } from "@/lib/licenseApi";
+import { useMe } from "@/hooks/useMe";
 import { toast } from "sonner";
 import { Key, Calendar, FileText, CheckCircle, XCircle, Loader2, ArrowLeft } from "lucide-react";
 
@@ -33,14 +34,12 @@ interface LicenseData {
 
 export default function ProfilePage() {
   const router = useRouter();
+  const { userId, userName, isLoading: isMeLoading } = useMe();
   const [license, setLicense] = useState<LicenseData | null>(null);
   const [licenseCode, setLicenseCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [codeError, setCodeError] = useState<string | null>(null);
-
-  const userId = typeof window !== "undefined" ? sessionStorage.getItem("userId") : null;
-  const userName = typeof window !== "undefined" ? sessionStorage.getItem("userName") : null;
 
   // Validate license code format
   // Accepts internal format: NUTRI-XXXX-XXXX-XXXX
@@ -53,12 +52,13 @@ export default function ProfilePage() {
   };
 
   useEffect(() => {
+    if (isMeLoading) return;
     if (!userId) {
       router.push("/login");
       return;
     }
     fetchLicense();
-  }, []);
+  }, [userId, isMeLoading]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchLicense = async () => {
     if (!userId) {

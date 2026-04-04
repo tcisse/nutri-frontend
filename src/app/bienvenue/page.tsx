@@ -88,7 +88,7 @@ export default function ActivatePage() {
           <Button asChild size="lg" className="w-full h-12">
             <Link href="/onboarding">
               <UserPlus className="w-4 h-4 mr-2" />
-              Créer mon compte
+              Créer mon compteac
             </Link>
           </Button>
           <Button asChild size="lg" variant="outline" className="w-full h-12">

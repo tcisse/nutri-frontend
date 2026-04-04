@@ -10,12 +10,10 @@ import {
   DaySelector,
   WeeklyCalorieHeader,
 } from "@/components/dashboard";
-import {
-  useMonthlyMenu,
-  useRegenerateMonthlyMenu,
-} from "@/hooks/useWeeklyMenu";
+import { useMonthlyMenu, useRegenerateMonthlyMenu } from "@/hooks/useWeeklyMenu";
+import { useMe } from "@/hooks/useMe";
 import type { DayOfMonth } from "@/types";
-import { removeUserToken } from "@/lib/cookies";
+import { clearUserSession } from "@/lib/cookies";
 import {
   Sparkles,
   RefreshCw,
@@ -31,32 +29,16 @@ import {
 
 export default function DashboardPage() {
   const router = useRouter();
-  const [isReady, setIsReady] = useState(false);
   const [selectedDay, setSelectedDay] = useState<DayOfMonth>(1);
+  const { isLoading: isMeLoading, isAuthenticated } = useMe();
 
   useEffect(() => {
-    const sessionId = sessionStorage.getItem("sessionId");
-    if (!sessionId) {
+    if (!isMeLoading && !isAuthenticated) {
       router.push("/login");
-      return;
     }
+  }, [isMeLoading, isAuthenticated, router]);
 
-    // Restore original sessionId if viewing an old session's menu
-    const previousSessionId = sessionStorage.getItem("previousSessionId");
-    if (previousSessionId) {
-      sessionStorage.setItem("sessionId", previousSessionId);
-      sessionStorage.removeItem("previousSessionId");
-    }
-
-    setIsReady(true);
-  }, [router]);
-
-  const {
-    data: monthlyMenuData,
-    isLoading,
-    isError,
-    error,
-  } = useMonthlyMenu();
+  const { data: monthlyMenuData, isLoading, isError, error } = useMonthlyMenu();
 
   const regenerateMonthMutation = useRegenerateMonthlyMenu();
 
@@ -73,7 +55,7 @@ export default function DashboardPage() {
   };
 
   const handleLogout = useCallback(() => {
-    removeUserToken();
+    clearUserSession();
     sessionStorage.clear();
     router.push("/login");
   }, [router]);
@@ -93,7 +75,7 @@ export default function DashboardPage() {
   const isLicenseError =
     error?.message?.includes("licence") || error?.message?.includes("Aucune licence active");
 
-  if (!isReady) {
+  if (isMeLoading || !isAuthenticated) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
